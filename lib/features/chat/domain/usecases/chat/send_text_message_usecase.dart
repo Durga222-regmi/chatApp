@@ -12,10 +12,8 @@ class SendTextMessageUsecase
 
   @override
   Future<Either<Failure, void>> call(SendTextMessageUsecasePrams params) async {
-    return await repository.getTextMessages(
-      params.messageType,
-      params.channelId,
-    );
+    return await repository.sendTextMessage(
+        params.textMessageEntity, params.channelId, params.messageType);
   }
 }
 

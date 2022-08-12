@@ -87,36 +87,34 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
     final userCollectionRef = firebaseFirestore.collection("users");
     final oneToOneChatChannelRef =
         firebaseFirestore.collection("oneToOneChatChannel");
-    userCollectionRef
+    final chatDoc = await userCollectionRef
         .doc(engageUserEntity.uid)
         .collection("chatChannel")
         .doc(engageUserEntity.otherUid)
-        .get()
-        .then((chatChannelDoc) {
-      if (chatChannelDoc.exists) {
-        return chatChannelDoc.get("channelID");
-      }
+        .get();
+
+    if (chatDoc.exists) {
+      return chatDoc.get("channelId");
+    } else {
       final chatChannelId = oneToOneChatChannelRef.doc().id;
+
       var channel = {'channelId': chatChannelId};
-      var channel1 = {'channelId': chatChannelId};
 
-      oneToOneChatChannelRef.doc(chatChannelId).set(channel);
+      await oneToOneChatChannelRef.doc(chatChannelId).set(channel);
 
-      userCollectionRef
+      await userCollectionRef
           .doc(engageUserEntity.uid)
           .collection("chatChannel")
           .doc(engageUserEntity.otherUid)
           .set(channel);
 
-      userCollectionRef
+      await userCollectionRef
           .doc(engageUserEntity.otherUid)
           .collection("chatChannel")
           .doc(engageUserEntity.uid)
           .set(channel);
       return chatChannelId;
-    });
-
-    return Future.value("");
+    }
   }
 
   @override
@@ -131,7 +129,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       if (chatChannel.exists) {
         return chatChannel.get("channelId");
       } else {
-        return Future.value(null);
+        return Future.value("");
       }
     });
   }
@@ -190,8 +188,9 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
   @override
   Stream<List<TextMessageEntity>> getTextMessages(
     String channelId,
+    MessageType messageType,
   ) {
-    final messageRefrence = _getMessageReference();
+    final messageReference = _getMessageReference(messageType, channelId);
     return messageReference.orderBy("time").snapshots().map((querySnapshot) {
       return querySnapshot.docs.map((queryDocumentSnapshot) {
         return TextMessageModel.fromSnapshot(queryDocumentSnapshot);
@@ -221,6 +220,8 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
 
     final messageId = messageReference.doc().id;
 
+    log("the message id is:$messageId");
+
     final newMessage = TextMessageModel(
             content: textMessageEntity.content,
             receiverName: textMessageEntity.receiverName,
@@ -231,7 +232,8 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
             type: textMessageEntity.type,
             messageId: messageId)
         .toDocument();
-    messageReference.doc(messageId).set(newMessage);
+    await messageReference.doc(messageId).set(newMessage);
+    log("sent");
   }
 
   @override
@@ -253,7 +255,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       groupInformation["creationTime"] = groupEntity.creationTime;
     }
 
-    userCollection.doc(groupEntity.groupId).update(groupInformation);
+    await userCollection.doc(groupEntity.groupId).update(groupInformation);
   }
 
   _createGroup(
@@ -289,15 +291,17 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
 
   CollectionReference<Map<String, dynamic>> _getMessageReference(
       MessageType messageType, String channelId) {
+    log("channelIdReadyToSent:$channelId");
     final messageReference = messageType == MessageType.group
         ? firebaseFirestore
             .collection("groupChatChannel")
             .doc(channelId)
             .collection("message")
         : firebaseFirestore
-            .collection("oneToOneChannel")
+            .collection("oneToOneChatChannel")
             .doc(channelId)
             .collection("message");
+
     return messageReference;
   }
 }

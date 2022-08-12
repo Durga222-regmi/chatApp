@@ -22,14 +22,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       try {
         final isSignedIn = await isSignedInUsecase(NoParams());
 
-        isSignedIn.fold((l) {
+        await isSignedIn.fold((l) async {
           emit(UnAuthenticated());
         }, (isSignedIn) async {
           final uid = await getCurrentUserIdUsecase(NoParams());
 
-          uid.fold((l) {
+          await uid.fold((l) async {
             emit(UnAuthenticated());
-          }, (uid) {
+          }, (uid) async {
             emit(Authenticated(uid: uid));
           });
         });
@@ -39,17 +39,19 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     });
     on<LoggedInEvent>((event, emit) async {
       final uid = await getCurrentUserIdUsecase(NoParams());
-      uid.fold((failure) {
+      await uid.fold((failure) async {
         emit(UnAuthenticated());
-      }, (uid) => emit(Authenticated(uid: uid)));
+      }, (uid) async {
+        emit(Authenticated(uid: uid));
+      });
     });
     on<SignedOutEvent>((event, emit) async {
       final val = await signOutUseCase(NoParams());
-      val.fold(
-        (l) {
+      await val.fold(
+        (l) async {
           emit(const AuthenticationFailure(message: "Please try again"));
         },
-        (r) {
+        (r) async {
           emit(UnAuthenticated());
         },
       );

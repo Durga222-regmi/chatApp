@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:group_chat_fb/core/enum/enums.dart';
 import 'package:group_chat_fb/features/chat/domain/entity/engage_user_entity.dart';
 import 'package:group_chat_fb/features/chat/domain/entity/text_message_entity.dart';
 import 'package:group_chat_fb/features/chat/domain/usecases/chat/add_to_my_chat_usecase.dart';
@@ -33,9 +34,10 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       emit(ChatLoading());
 
       final textMessagesOrFailure = await getTextMessageUseCase(
-          GetTextMessageUsecaseParams(channelId: event.channelId));
+          GetTextMessageUsecaseParams(
+              channelId: event.channelId, messageType: event.messageType));
 
-      textMessagesOrFailure.fold((failure) {
+      await textMessagesOrFailure.fold((failure) async {
         emit(ChatFailure(failureMessage: "Can not get messages"));
       }, (textMessages) async {
         await emit.forEach(textMessages,
@@ -47,12 +49,14 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     });
 
     on<SendTextMessageEvent>((event, emit) async {
-      final resultOrFailure = await sendTextMessageUseCase(
-          SendTextMessageUsecasePrams(
-              channelId: event.channelId,
-              textMessageEntity: event.textMessageEntity));
+      final resultOrFailure =
+          await sendTextMessageUseCase(SendTextMessageUsecasePrams(
+        channelId: event.channelId,
+        textMessageEntity: event.textMessageEntity,
+        messageType: event.messageType,
+      ));
 
-      resultOrFailure.fold((failure) {
+      await resultOrFailure.fold((failure) async {
         ChatFailure(failureMessage: "can not send message");
       }, (result) {
         log("message sent successfully");
@@ -62,9 +66,9 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       final resultOrFailure = await addToMyChatUseCase(
           AddToMyChatUseCasePrams(myChatEntity: event.myChatEntity));
 
-      resultOrFailure.fold((failure) {
+      resultOrFailure.fold((failure) async {
         ChatFailure(failureMessage: "can not send message");
-      }, (result) {
+      }, (result) async {
         log("message sent successfully");
       });
     });
@@ -74,11 +78,17 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
           CreateOneToOneChannelUsecasePrams(
               engageUserEntity: event.engageUserEntity));
 
-      resultOrFailure.fold((failure) {
+      await resultOrFailure.fold((failure) async {
         ChatFailure(failureMessage: "can not send message");
-      }, (result) {
-        log("message sent successfully");
+      }, (result) async {
+        log("result is $result");
+        emit(ChatChannelCreated(channelID:  result));
       });
     });
+  }
+
+  @override
+  Future<void> close() {
+    return super.close();
   }
 }

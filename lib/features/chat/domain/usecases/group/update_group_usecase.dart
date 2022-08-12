@@ -1,15 +1,16 @@
-import 'package:group_chat_fb/core/type_def/type_def_constant.dart';
+import 'package:dartz/dartz.dart';
+import 'package:group_chat_fb/core/error/failure.dart';
 import 'package:group_chat_fb/core/use_case/usecase.dart';
 import 'package:group_chat_fb/features/chat/domain/entity/group_entity.dart';
 import 'package:group_chat_fb/features/chat/domain/repository/chat_repository.dart';
 
-class UpdateGroupUsecase extends UseCase<FutureVoid, UpdateGroupUsecasePrams> {
+class UpdateGroupUsecase extends UseCase<void, UpdateGroupUsecasePrams> {
   final ChatRepository repository;
   UpdateGroupUsecase({required this.repository});
 
   @override
-  FutureVoid call(UpdateGroupUsecasePrams params) async {
-    await repository.updateGroup(params.groupEntity);
+  Future<Either<Failure, void>> call(UpdateGroupUsecasePrams params) async {
+    return await repository.updateGroup(params.groupEntity);
   }
 }
 

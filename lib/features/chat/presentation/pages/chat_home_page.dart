@@ -28,10 +28,10 @@ class _ChatHomePageState extends State<ChatHomePage> {
   int currentIndex = 0;
 
   List<Widget>? get pages => [
+        AllUserPage(uid: widget.uid),
         GroupPage(
           uid: widget.uid,
         ),
-        AllUserPage(uid: widget.uid),
       ];
   @override
   void initState() {
@@ -39,6 +39,7 @@ class _ChatHomePageState extends State<ChatHomePage> {
     log("calling main...");
 
     BlocProvider.of<UserBloc>(context).add(GetUserEvent());
+
     BlocProvider.of<GroupBloc>(context).add(GetGroupEvent());
 
     super.initState();
@@ -126,8 +127,7 @@ class _ChatHomePageState extends State<ChatHomePage> {
                     padding: const EdgeInsets.symmetric(horizontal: 10),
                     child: GestureDetector(
                       onTap: () {
-                        BlocProvider.of<AuthBloc>(context)
-                            .add(SignedOutEvent());
+                        logOutTheUser(context);
                       },
                       child: const Icon(Icons.logout_outlined),
                     ),
@@ -145,16 +145,12 @@ class _ChatHomePageState extends State<ChatHomePage> {
                                   (element) => element.userId == widget.uid));
                         },
                         child: CircleAvatar(
-                          backgroundImage: NetworkImage(
-                            userState is UserLoaded
-                                ? userState.users
-                                        .where((element) =>
-                                            element.userId == widget.uid)
-                                        .first
-                                        .profileUrl ??
-                                    AppConstant.defaulutUrl
-                                : AppConstant.defaulutUrl,
-                          ),
+                          backgroundImage: NetworkImage(userState.users
+                                  .where(
+                                      (element) => element.userId == widget.uid)
+                                  .first
+                                  .profileUrl ??
+                              AppConstant.defaulutUrl),
                         ),
                       ),
                     ),

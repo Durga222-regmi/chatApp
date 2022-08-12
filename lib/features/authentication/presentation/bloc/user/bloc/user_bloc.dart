@@ -22,7 +22,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
 
       final userOrFailure = await getAllUserUsecase(NoParams());
 
-      userOrFailure.fold((failure) {
+      await userOrFailure.fold((failure) async {
         emit(UserFailure());
       }, (user) async {
         await emit.forEach<List<UserEntity>>(user,
@@ -38,11 +38,11 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       final resultOfFailure = await getUpdateUserUsecase(
           GetUpdateUserUsecasePrams(entity: event.entity));
 
-      resultOfFailure.fold(
-        (l) {
+      await resultOfFailure.fold(
+        (l) async {
           emit(UserFailure());
         },
-        (r) {
+        (r) async {
           emit(UserUpdated());
         },
       );

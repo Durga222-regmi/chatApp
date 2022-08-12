@@ -50,21 +50,19 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
     });
     on<GetGroupEvent>((event, emit) async {
       emit(GroupLoading());
-      try {
-        final groupsOrFailure = await getGroupUsecase(NoParams());
-        groupsOrFailure.fold(
-          (failure) {
-            emit(const GroupFailure(failureMessage: "Cannot create group"));
-          },
-          (groups) async {
-            await emit.forEach(groups, onData: (List<GroupEntity> groupList) {
-              return GroupLoaded(groupEntities: groupList);
-            });
-          },
-        );
-      } catch (e) {
-        emit(const GroupFailure(failureMessage: "cannot create group"));
-      }
+
+      final groupsOrFailure = await getGroupUsecase(NoParams());
+      await groupsOrFailure.fold(
+        (failure) async {
+          emit(const GroupFailure(failureMessage: "Cannot create group"));
+        },
+        (groups) async {
+          await emit.forEach<List<GroupEntity>>(groups,
+              onData: (List<GroupEntity> groupList) {
+            return GroupLoaded(groupEntities: groupList);
+          });
+        },
+      );
     });
     on<JoinGroupEvent>((event, emit) async {
       try {

@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:group_chat_fb/app_constant.dart';
+import 'package:group_chat_fb/core/enum/enums.dart';
 import 'package:group_chat_fb/features/authentication/presentation/bloc/user/bloc/user_bloc.dart';
 import 'package:group_chat_fb/features/chat/domain/entity/single_chat_entity.dart';
 import 'package:group_chat_fb/features/chat/presentation/bloc/group/group_bloc.dart';
@@ -73,19 +74,7 @@ class _GroupPageState extends State<GroupPage> {
             );
           }
           // else if (groupState is GroupJoining) {
-          //   return Center(
-          //     child: Column(
-          //       mainAxisAlignment: MainAxisAlignment.center,
-          //       crossAxisAlignment: CrossAxisAlignment.center,
-          //       children: const [
-          //         CircularProgressIndicator(
-          //           backgroundColor: AppConstant.PRIMARY_COLOR,
-          //         ),
-          //         Text("Joining group...")
-          //       ],
-          //     ),
-          //   );
-          // }
+
           else if (groupState is GroupLoaded) {
             final filterGroup = groupState.groupEntities.where((element) {
               return (element.groupName ?? "")
@@ -133,13 +122,16 @@ class _GroupPageState extends State<GroupPage> {
 
                                         Navigator.pushNamed(
                                             context, SingleChatPage.routeName,
-                                            arguments: SingleChatEntity(
-                                                userName: user.name,
-                                                groupId:
-                                                    filterGroup[index].groupId,
-                                                groupName: filterGroup[index]
-                                                    .groupName,
-                                                uid: widget.uid));
+                                            arguments: [
+                                              SingleChatEntity(
+                                                  userName: user.name,
+                                                  groupName: filterGroup[index]
+                                                      .groupName,
+                                                  groupId: filterGroup[index]
+                                                      .groupId,
+                                                  uid: widget.uid),
+                                              MessageType.group
+                                            ]);
                                       },
                                       child: Container(
                                         decoration: BoxDecoration(

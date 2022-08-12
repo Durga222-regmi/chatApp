@@ -5,14 +5,14 @@ import 'package:group_chat_fb/features/chat/domain/entity/engage_user_entity.dar
 import 'package:group_chat_fb/features/chat/domain/repository/chat_repository.dart';
 
 class CreateOneToOneChannelUsecase
-    extends UseCase<void, CreateOneToOneChannelUsecasePrams> {
+    extends UseCase<String, CreateOneToOneChannelUsecasePrams> {
   final ChatRepository repository;
   CreateOneToOneChannelUsecase({required this.repository});
 
   @override
-  Future<Either<Failure, void>> call(
+  Future<Either<Failure, String>> call(
       CreateOneToOneChannelUsecasePrams params) async {
-    return await repository.createOneToOneChannel(params.engageUserEntity);
+    return  repository.createOneToOneChannel(params.engageUserEntity);
   }
 }
 

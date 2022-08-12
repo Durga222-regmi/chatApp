@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:bubble/bubble.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -8,6 +9,7 @@ import 'package:group_chat_fb/app_constant.dart';
 import 'package:group_chat_fb/core/dynamic_widgets/custom_app_bar.dart';
 import 'package:group_chat_fb/core/enum/enums.dart';
 import 'package:group_chat_fb/features/chat/domain/entity/group_entity.dart';
+import 'package:group_chat_fb/features/chat/domain/entity/my_chat_entity.dart';
 import 'package:group_chat_fb/features/chat/domain/entity/single_chat_entity.dart';
 import 'package:group_chat_fb/features/chat/domain/entity/text_message_entity.dart';
 import 'package:group_chat_fb/features/chat/presentation/bloc/chat/chat_bloc.dart';
@@ -16,8 +18,12 @@ import 'package:intl/intl.dart';
 
 class SingleChatPage extends StatefulWidget {
   SingleChatEntity singleChatEntity;
+
   static const routeName = "/single_chat_page";
-  SingleChatPage({Key? key, required this.singleChatEntity}) : super(key: key);
+  MessageType messageType;
+  SingleChatPage(
+      {Key? key, required this.singleChatEntity, required this.messageType})
+      : super(key: key);
 
   @override
   State<SingleChatPage> createState() => _SingleChatPageState();
@@ -29,15 +35,20 @@ class _SingleChatPageState extends State<SingleChatPage> {
   final ScrollController _messageScrollController = ScrollController();
   final bool _changeKeyBoardType = false;
   final int _menuIndex = 0;
+  ChatBloc? chatBloc;
+  String? singleChannelId;
 
   @override
   void initState() {
     _messageController.addListener(() {
       setState(() {});
     });
-    BlocProvider.of<ChatBloc>(context).add(GetTextMessageEvent(
-        channelId: widget.singleChatEntity.groupId!,
-        messageType: MessageType.group));
+
+    if (widget.messageType == MessageType.group) {
+      BlocProvider.of<ChatBloc>(context).add(GetTextMessageEvent(
+          channelId: widget.singleChatEntity.groupId!,
+          messageType: MessageType.group));
+    }
 
     super.initState();
   }
@@ -46,13 +57,9 @@ class _SingleChatPageState extends State<SingleChatPage> {
   void dispose() {
     _messageController.dispose();
     _messageScrollController.dispose();
+
     super.dispose();
   }
-
-  // @override
-  // void didChangeDependencies() {
-  //   super.didChangeDependencies();
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -69,6 +76,18 @@ class _SingleChatPageState extends State<SingleChatPage> {
         ),
       ),
       body: BlocBuilder<ChatBloc, ChatState>(builder: (context, chatState) {
+        if (chatState is ChatChannelCreated) {
+          if (widget.messageType == MessageType.oneToOne) {
+            singleChannelId = chatState.channelID;
+            log("yess");
+            BlocProvider.of<ChatBloc>(context).add(GetTextMessageEvent(
+                channelId: widget.messageType == MessageType.oneToOne
+                    ? chatState.channelID
+                    : widget.singleChatEntity.groupId.toString(),
+                messageType: widget.messageType));
+          }
+        }
+
         if (chatState is ChatLoaded) {
           return Column(
             children: [
@@ -139,111 +158,129 @@ class _SingleChatPageState extends State<SingleChatPage> {
     ));
   }
 
-  Container _sendMessageTextField() {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10, left: 4, right: 4),
-      child: Row(
-        children: [
-          Expanded(
-              child: Container(
-            decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(80),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(.2),
-                    offset: const Offset(0.0, 0.50),
-                    spreadRadius: 1,
-                    blurRadius: 1,
-                  )
-                ]),
-            child: Row(
-              children: [
-                const SizedBox(
-                  width: 10,
-                ),
-                Icon(
-                  Icons.insert_emoticon,
-                  color: Colors.grey[500],
-                ),
-                const SizedBox(
-                  width: 10,
-                ),
-                Expanded(
-                    child: Container(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxHeight: 60),
-                    child: Scrollbar(
-                        child: TextField(
-                      style: const TextStyle(fontSize: 14),
-                      controller: _messageController,
-                      maxLines: null,
-                      decoration: const InputDecoration(
-                          border: InputBorder.none, hintText: "Type a message"),
-                    )),
-                  ),
-                )),
-                Row(
-                  children: [
-                    const Icon(Icons.link),
-                    const SizedBox(
-                      width: 10,
-                    ),
-                    _messageController.text.isEmpty
-                        ? Icon(
-                            Icons.camera_alt,
-                            color: Colors.grey[500],
-                          )
-                        : const Text(""),
-                  ],
-                ),
-                const SizedBox(
-                  width: 15,
-                ),
-              ],
-            ),
-          )),
-          const SizedBox(
-            width: 5,
-          ),
-          GestureDetector(
-            onTap: () {
-              if (_messageController.text.isNotEmpty) {
-                BlocProvider.of<ChatBloc>(context).add(SendTextMessageEvent(
-                    channelId: widget.singleChatEntity.groupId!,
-                    textMessageEntity: TextMessageEntity(
-                        content: _messageController.text,
-                        time: Timestamp.now(),
-                        senderId: widget.singleChatEntity.uid,
-                        senderName: widget.singleChatEntity.userName,
-                        type: "TEXT"),
-                    messageType: MessageType.group));
-                BlocProvider.of<GroupBloc>(context).add(UpdateGroupEvent(
-                    groupEntity: GroupEntity(
-                        groupId: widget.singleChatEntity.groupId,
-                        creationTime: Timestamp.now(),
-                        lastMessage: _messageController.text)));
-                setState(() {
-                  _messageController.clear();
-                });
-              }
-            },
-            child: Container(
-              height: 45,
-              width: 45,
+  BlocBuilder _sendMessageTextField() {
+    return BlocBuilder<ChatBloc, ChatState>(builder: (context, chatState) {
+      return Container(
+        margin: const EdgeInsets.only(bottom: 10, left: 4, right: 4),
+        child: Row(
+          children: [
+            Expanded(
+                child: Container(
               decoration: BoxDecoration(
-                color: Colors.green,
-                borderRadius: BorderRadius.circular(50),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(80),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(.2),
+                      offset: const Offset(0.0, 0.50),
+                      spreadRadius: 1,
+                      blurRadius: 1,
+                    )
+                  ]),
+              child: Row(
+                children: [
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  Icon(
+                    Icons.insert_emoticon,
+                    color: Colors.grey[500],
+                  ),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  Expanded(
+                      child: Container(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxHeight: 60),
+                      child: Scrollbar(
+                          child: TextField(
+                        style: const TextStyle(fontSize: 14),
+                        controller: _messageController,
+                        maxLines: null,
+                        decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            hintText: "Type a message"),
+                      )),
+                    ),
+                  )),
+                  Row(
+                    children: [
+                      const Icon(Icons.link),
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      _messageController.text.isEmpty
+                          ? Icon(
+                              Icons.camera_alt,
+                              color: Colors.grey[500],
+                            )
+                          : const Text(""),
+                    ],
+                  ),
+                  const SizedBox(
+                    width: 15,
+                  ),
+                ],
               ),
-              child: Icon(
-                _messageController.text.isEmpty ? Icons.mic : Icons.send,
-                color: Colors.white,
-              ),
+            )),
+            const SizedBox(
+              width: 5,
             ),
-          )
-        ],
-      ),
-    );
+            GestureDetector(
+              onTap: () {
+                log("channel id when sending:$singleChannelId");
+                if (_messageController.text.isNotEmpty) {
+                  BlocProvider.of<ChatBloc>(context).add(SendTextMessageEvent(
+                      channelId: widget.messageType == MessageType.group
+                          ? widget.singleChatEntity.groupId!
+                          : singleChannelId!,
+                      textMessageEntity: TextMessageEntity(
+                          content: _messageController.text,
+                          time: Timestamp.now(),
+                          senderId: widget.singleChatEntity.uid,
+                          senderName: widget.singleChatEntity.userName,
+                          type: "TEXT"),
+                      messageType: widget.messageType));
+
+                  if (widget.messageType == MessageType.group) {
+                    BlocProvider.of<GroupBloc>(context).add(UpdateGroupEvent(
+                        groupEntity: GroupEntity(
+                            groupId: widget.singleChatEntity.groupId,
+                            creationTime: Timestamp.now(),
+                            lastMessage: _messageController.text)));
+                  } else {
+                    BlocProvider.of<ChatBloc>(context).add(AddToMyChatEvent(
+                        myChatEntity: MyChatEntity(
+                            channelId: singleChannelId,
+                            communicationType: "Text",
+                            recipientUID: widget.singleChatEntity.uid,
+                            recipientName: widget.singleChatEntity.groupName,
+                            recentTextMessage: _messageController.text)));
+                  }
+
+                  setState(() {
+                    _messageController.clear();
+                  });
+                }
+              },
+              child: Container(
+                height: 45,
+                width: 45,
+                decoration: BoxDecoration(
+                  color: Colors.green,
+                  borderRadius: BorderRadius.circular(50),
+                ),
+                child: Icon(
+                  _messageController.text.isEmpty ? Icons.mic : Icons.send,
+                  color: Colors.white,
+                ),
+              ),
+            )
+          ],
+        ),
+      );
+    });
   }
 
   Widget _messageLayOut(

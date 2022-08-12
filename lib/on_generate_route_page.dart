@@ -3,7 +3,6 @@ import 'package:group_chat_fb/features/authentication/domain/enitity/user_entity
 import 'package:group_chat_fb/features/authentication/presentation/pages/forgot_password_page.dart';
 import 'package:group_chat_fb/features/authentication/presentation/pages/sign_up_page.dart';
 import 'package:group_chat_fb/features/authentication/presentation/pages/sing_in_page.dart';
-import 'package:group_chat_fb/features/chat/domain/entity/single_chat_entity.dart';
 import 'package:group_chat_fb/features/chat/presentation/pages/chat_home_page.dart';
 import 'package:group_chat_fb/features/chat/presentation/pages/create_group_page.dart';
 import 'package:group_chat_fb/features/chat/presentation/pages/profile_page.dart';
@@ -30,9 +29,10 @@ class OnGenerateRoute {
         }
       case PageConstant.singleChatPage:
         {
-          if (args is SingleChatEntity) {
+          if (args is List) {
             return materialBuilder(SingleChatPage(
-              singleChatEntity: args,
+              singleChatEntity: args.first,
+              messageType: args[1],
             ));
           } else {
             return materialBuilder(const ErrorPage());

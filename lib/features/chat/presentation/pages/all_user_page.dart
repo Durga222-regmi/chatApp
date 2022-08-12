@@ -1,14 +1,16 @@
 import 'dart:developer';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:group_chat_fb/app_constant.dart';
 import 'package:group_chat_fb/features/authentication/presentation/bloc/user/bloc/user_bloc.dart';
 import 'package:group_chat_fb/features/chat/domain/entity/engage_user_entity.dart';
-import 'package:group_chat_fb/features/chat/domain/entity/my_chat_entity.dart';
 import 'package:group_chat_fb/features/chat/presentation/bloc/chat/chat_bloc.dart';
+import 'package:group_chat_fb/features/chat/presentation/pages/single_chat_page.dart';
 import 'package:group_chat_fb/features/chat/presentation/widgets/search_field.dart';
+
+import '../../../../core/enum/enums.dart';
+import '../../domain/entity/single_chat_entity.dart';
 
 class AllUserPage extends StatefulWidget {
   static const routeName = "/all_user_page";
@@ -78,79 +80,84 @@ class _AllUserPageState extends State<AllUserPage> {
                           itemCount: filterUsers.length,
                           itemBuilder: (ctx, index) {
                             return Padding(
-                              padding: const EdgeInsets.only(bottom: 10),
-                              child: GestureDetector(
-                                onTap: () {
-                                  BlocProvider.of<ChatBloc>(context)
-                                      .add(AddToMyChatEvent(
-                                          myChatEntity: MyChatEntity(
-                                    senderUID: widget.uid,
-                                    recentTextMessage: "",
-                                    recipientName: filterUsers[index].name,
-                                    senderName: filterUsers[index].name,
-                                    isArchived: true,
-                                    profileUrl: filterUsers[index].profileUrl,
-                                    recipientUID: filterUsers[index].userId,
-                                    time: Timestamp.now(),
-                                  )));
-                                  BlocProvider.of<ChatBloc>(context).add(
-                                      CreateOneToOneChannelEvent(
-                                          engageUserEntity: EngageUserEntity(
-                                              otherUid:
-                                                  filterUsers[index].userId,
-                                              uid: widget.uid)));
-                                },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(5),
-                                      border: Border.all(
-                                          width: 0.5,
-                                          color: Colors.grey[500]!)),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(15),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Column(
+                                padding: const EdgeInsets.only(bottom: 10),
+                                child: BlocBuilder<ChatBloc, ChatState>(
+                                    builder: (context, chatState) {
+                                  return GestureDetector(
+                                    onTap: () async {
+                                      BlocProvider.of<ChatBloc>(context).add(
+                                          CreateOneToOneChannelEvent(
+                                              engageUserEntity:
+                                                  EngageUserEntity(
+                                                      otherUid:
+                                                          filterUsers[index]
+                                                              .userId,
+                                                      uid: widget.uid)));
+                                      Navigator.pushNamed(
+                                          context, SingleChatPage.routeName,
+                                          arguments: [
+                                            SingleChatEntity(
+                                                groupName:
+                                                    filterUsers[index].name,
+                                                uid: widget.uid,
+                                                groupId:
+                                                    filterUsers[index].userId),
+                                            MessageType.oneToOne
+                                          ]);
+                                    },
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(5),
+                                          border: Border.all(
+                                              width: 0.5,
+                                              color: Colors.grey[500]!)),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(15),
+                                        child: Row(
                                           mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                              MainAxisAlignment.spaceBetween,
                                           children: [
-                                            Text(
-                                              filterUsers[index]
-                                                  .name
-                                                  .toString(),
-                                              style: const TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w500),
+                                            Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  filterUsers[index]
+                                                      .name
+                                                      .toString(),
+                                                  style: const TextStyle(
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.w500),
+                                                ),
+                                                const SizedBox(
+                                                  height: 10,
+                                                ),
+                                                Text(
+                                                  filterUsers[index]
+                                                      .email
+                                                      .toString(),
+                                                  style: TextStyle(
+                                                      color: Colors.grey[500]),
+                                                ),
+                                              ],
                                             ),
-                                            const SizedBox(
-                                              height: 10,
-                                            ),
-                                            Text(
-                                              filterUsers[index]
-                                                  .email
-                                                  .toString(),
-                                              style: TextStyle(
-                                                  color: Colors.grey[500]),
-                                            ),
+                                            CircleAvatar(
+                                              radius: 22,
+                                              backgroundImage: NetworkImage(
+                                                filterUsers[index].profileUrl ??
+                                                    "https://cdn.vectorstock.com/i/1000x1000/45/79/male-avatar-profile-picture-silhouette-light-vector-4684579.webp",
+                                              ),
+                                            )
                                           ],
                                         ),
-                                        CircleAvatar(
-                                          radius: 22,
-                                          backgroundImage: NetworkImage(
-                                            filterUsers[index].profileUrl ??
-                                                "https://cdn.vectorstock.com/i/1000x1000/45/79/male-avatar-profile-picture-silhouette-light-vector-4684579.webp",
-                                          ),
-                                        )
-                                      ],
+                                      ),
                                     ),
-                                  ),
-                                ),
-                              ),
-                            );
+                                  );
+                                }));
                           }))
             ],
           ),

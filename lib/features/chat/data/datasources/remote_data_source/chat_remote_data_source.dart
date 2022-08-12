@@ -1,3 +1,5 @@
+import 'package:group_chat_fb/core/enum/enums.dart';
+
 import '../../../domain/entity/engage_user_entity.dart';
 import '../../../domain/entity/group_entity.dart';
 import '../../../domain/entity/my_chat_entity.dart';
@@ -12,9 +14,10 @@ abstract class ChatRemoteDataSource {
   Future<String> getChannelId(EngageUserEntity engageUserEntity);
   Future<void> createNewGroup(
       MyChatEntity myChatEntity, List<String> selectedUsersList);
-  Future<void> sendTextMessage(
-      TextMessageEntity textMessageEntity, String channelID);
-  Stream<List<TextMessageEntity>> getTextMessages(String channelId);
+  Future<void> sendTextMessage(TextMessageEntity textMessageEntity,
+      String channelID, MessageType messageType);
+  Stream<List<TextMessageEntity>> getTextMessages(
+      String channelId, MessageType messageType);
   Future<void> addToMyChat(MyChatEntity myChatEntity);
   Stream<List<MyChatEntity>> getMyChat(String uid);
 }

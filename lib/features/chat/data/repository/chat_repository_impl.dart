@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:group_chat_fb/core/enum/enums.dart';
 import 'package:group_chat_fb/core/error/failure.dart';
 import 'package:group_chat_fb/core/type_def/type_def_constant.dart';
 import 'package:group_chat_fb/features/chat/domain/entity/engage_user_entity.dart';
@@ -85,9 +86,12 @@ class ChatRepositoryImpl implements ChatRepository {
 
   @override
   Future<Either<Failure, StreamList<TextMessageEntity>>> getTextMessages(
-      String channelId) async {
+    MessageType messageType,
+    String channelId,
+  ) async {
     try {
-      return Right(chatRemoteDataSource.getTextMessages(channelId));
+      return Right(
+          chatRemoteDataSource.getTextMessages(channelId, messageType));
     } catch (e) {
       return Left(ServerFailure());
     }
@@ -104,10 +108,12 @@ class ChatRepositoryImpl implements ChatRepository {
 
   @override
   Future<Either<Failure, void>> sendTextMessage(
-      TextMessageEntity textMessageEntity, String channelID) async {
+      TextMessageEntity textMessageEntity,
+      String channelID,
+      MessageType messageType) async {
     try {
       return Right(await chatRemoteDataSource.sendTextMessage(
-          textMessageEntity, channelID));
+          textMessageEntity, channelID, messageType));
     } catch (e) {
       return Left(ServerFailure());
     }

@@ -11,6 +11,15 @@ class ChatInitial extends ChatState {}
 
 class ChatLoading extends ChatState {}
 
+class ChatChannelCreating extends ChatState {}
+
+class ChatChannelCreated extends ChatState {
+  String channelID;
+  ChatChannelCreated({required this.channelID});
+  @override
+  List<Object> get props => [channelID];
+}
+
 class ChatLoaded extends ChatState {
   List<TextMessageEntity> textMessages;
   ChatLoaded({required this.textMessages});

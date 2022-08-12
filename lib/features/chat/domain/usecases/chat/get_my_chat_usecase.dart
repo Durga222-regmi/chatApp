@@ -1,3 +1,5 @@
+import 'package:dartz/dartz.dart';
+import 'package:group_chat_fb/core/error/failure.dart';
 import 'package:group_chat_fb/core/type_def/type_def_constant.dart';
 import 'package:group_chat_fb/core/use_case/usecase.dart';
 import 'package:group_chat_fb/features/chat/domain/entity/my_chat_entity.dart';
@@ -9,8 +11,9 @@ class GetMyChatUsecase
   GetMyChatUsecase({required this.repository});
 
   @override
-  StreamList<MyChatEntity> call(GetMyChatUsecaseParams params) {
-    return repository.getMyChat(params.uid);
+  Future<Either<Failure, StreamList<MyChatEntity>>> call(
+      GetMyChatUsecaseParams params) async {
+    return await repository.getMyChat(params.uid);
   }
 }
 
