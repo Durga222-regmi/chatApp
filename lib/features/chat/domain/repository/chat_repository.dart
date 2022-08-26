@@ -10,7 +10,7 @@ import 'package:group_chat_fb/features/chat/domain/entity/text_message_entity.da
 abstract class ChatRepository {
   Future<Either<Failure, void>> getCreateGroup(GroupEntity groupEntity);
   Future<Either<Failure, StreamList<GroupEntity>>> getGroups();
-  Future<Either<Failure, void>> joinGroup(GroupEntity groupEntity);
+  Future<Either<Failure, void>> joinGroup(GroupEntity groupEntity, String uid);
   Future<Either<Failure, void>> updateGroup(GroupEntity groupEntity);
   Future<Either<Failure, String>> createOneToOneChannel(
       EngageUserEntity engageUserEntity);
@@ -26,4 +26,8 @@ abstract class ChatRepository {
       MessageType messageType, String channelId);
   Future<Either<Failure, void>> addToMyChat(MyChatEntity myChatEntity);
   Future<Either<Failure, StreamList<MyChatEntity>>> getMyChat(String uid);
+  Future<Either<Failure, GroupEntity>> getSingleGroupDetail(String groupId);
+  // Future<Either<Failure, GroupEntity>> createVideoChatChanel(
+  // //     String cahnnelId, List<GroupUserEntity> groupUserList);
+  // // Future<Either<Failure, GroupEntity>> getVideoChatInfo(String uid);
 }

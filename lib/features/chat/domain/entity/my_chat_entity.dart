@@ -16,23 +16,24 @@ class MyChatEntity extends Equatable {
   final String? senderPhoneNumber;
   final String? subjectName;
   final String? communicationType;
+  final bool? isGroup;
 
-  const MyChatEntity({
-    this.channelId,
-    this.communicationType,
-    this.isArchived,
-    this.recipientUID,
-    this.isRead,
-    this.profileUrl,
-    this.recentTextMessage,
-    this.recipientName,
-    this.recipientPhoneNumber,
-    this.senderName,
-    this.senderPhoneNumber,
-    this.senderUID,
-    this.subjectName,
-    this.time,
-  });
+  const MyChatEntity(
+      {this.channelId,
+      this.communicationType,
+      this.isArchived,
+      this.recipientUID,
+      this.isRead,
+      this.profileUrl,
+      this.recentTextMessage,
+      this.recipientName,
+      this.recipientPhoneNumber,
+      this.senderName,
+      this.senderPhoneNumber,
+      this.senderUID,
+      this.subjectName,
+      this.time,
+      this.isGroup});
 
   @override
   // TODO: implement props

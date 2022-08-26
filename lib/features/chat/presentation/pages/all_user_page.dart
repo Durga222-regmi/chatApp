@@ -34,7 +34,6 @@ class _AllUserPageState extends State<AllUserPage> {
     _searchFocus.addListener(() {
       setState(() {});
     });
-    BlocProvider.of<UserBloc>(context).add(GetUserEvent());
 
     super.initState();
   }
@@ -100,6 +99,8 @@ class _AllUserPageState extends State<AllUserPage> {
                                                 groupName:
                                                     filterUsers[index].name,
                                                 uid: widget.uid,
+                                                photoUrl: filterUsers[index]
+                                                    .profileUrl,
                                                 groupId:
                                                     filterUsers[index].userId),
                                             MessageType.oneToOne

@@ -20,6 +20,13 @@ class ChatChannelCreated extends ChatState {
   List<Object> get props => [channelID];
 }
 
+class ChatSuccess extends ChatState {}
+
+class ChatChannelIdLoaded extends ChatState {
+  String channelId;
+  ChatChannelIdLoaded({required this.channelId});
+}
+
 class ChatLoaded extends ChatState {
   List<TextMessageEntity> textMessages;
   ChatLoaded({required this.textMessages});
@@ -33,3 +40,7 @@ class ChatFailure extends ChatState {
   @override
   List<Object> get props => [failureMessage];
 }
+
+class MyChatsLoading extends ChatState {}
+
+

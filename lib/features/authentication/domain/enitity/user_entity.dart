@@ -12,6 +12,8 @@ class UserEntity extends Equatable {
   final String? password;
   final Timestamp? dob;
   final String? gender;
+  final List<String>? chattingWith;
+  final String? pushToken;
 
   const UserEntity(
       {this.dob,
@@ -23,7 +25,9 @@ class UserEntity extends Equatable {
       this.phoneNumber,
       this.profileUrl,
       this.status,
-      this.userId});
+      this.userId,
+      this.chattingWith,
+      this.pushToken});
 
   @override
   List<Object?> get props => [
@@ -35,6 +39,8 @@ class UserEntity extends Equatable {
         phoneNumber,
         profileUrl,
         status,
-        userId
+        userId,
+        chattingWith,
+        pushToken
       ];
 }

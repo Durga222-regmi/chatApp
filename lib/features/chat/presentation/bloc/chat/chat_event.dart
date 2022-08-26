@@ -7,16 +7,6 @@ abstract class ChatEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class AddToMyChatEvent extends ChatEvent {
-  MyChatEntity myChatEntity;
-  AddToMyChatEvent({
-    required this.myChatEntity,
-  });
-
-  @override
-  List<Object> get props => [myChatEntity];
-}
-
 class GetTextMessageEvent extends ChatEvent {
   MessageType messageType;
   String channelId;
@@ -41,6 +31,13 @@ class SendTextMessageEvent extends ChatEvent {
 class CreateOneToOneChannelEvent extends ChatEvent {
   EngageUserEntity engageUserEntity;
   CreateOneToOneChannelEvent({required this.engageUserEntity});
+  @override
+  List<Object> get props => [engageUserEntity];
+}
+
+class GetChannelIdEvent extends ChatEvent {
+  EngageUserEntity engageUserEntity;
+  GetChannelIdEvent({required this.engageUserEntity});
   @override
   List<Object> get props => [engageUserEntity];
 }

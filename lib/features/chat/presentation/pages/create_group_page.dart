@@ -243,10 +243,10 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
     BlocProvider.of<GroupBloc>(context).add(GetCreateGroupEvent(
         groupEntity: GroupEntity(
             creationTime: Timestamp.now(),
-            uid: widget.uid,
+            admin: GroupAdminEntity(uid: widget.uid),
             groupName: _groupNameController.text,
             groupProfileImage: profileUrl,
-            joinUsers: "0",
+            joinUsers: "1",
             limitUsers: _numberOfPeopleController.text,
             lastMessage: ""),
         file: _image!));

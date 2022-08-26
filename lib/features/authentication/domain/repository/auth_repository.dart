@@ -14,4 +14,6 @@ abstract class AuthRepository {
   Future<Either<Failure, StreamList<UserEntity>>> getAllUsers();
   Future<Either<Failure, void>> signOut();
   Future<Either<Failure, void>> signIn(UserEntity user);
+  Future<Either<Failure, void>> updateChattingWith(
+      List<String> users, String uid);
 }

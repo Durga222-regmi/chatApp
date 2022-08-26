@@ -8,7 +8,7 @@ import '../../../domain/entity/text_message_entity.dart';
 abstract class ChatRemoteDataSource {
   Future<void> getCreateGroup(GroupEntity groupEntity);
   Stream<List<GroupEntity>> getGroups();
-  Future<void> joinGroup(GroupEntity groupEntity);
+  Future<void> joinGroup(GroupEntity groupEntity, String uid);
   Future<void> updateGroup(GroupEntity groupEntity);
   Future<String> createOneToOneChannel(EngageUserEntity engageUserEntity);
   Future<String> getChannelId(EngageUserEntity engageUserEntity);
@@ -20,4 +20,8 @@ abstract class ChatRemoteDataSource {
       String channelId, MessageType messageType);
   Future<void> addToMyChat(MyChatEntity myChatEntity);
   Stream<List<MyChatEntity>> getMyChat(String uid);
+  Future<GroupEntity> getSingleGroupDetail(String uid);
+  // Future<void> createVideoChatChanel(
+  //     String cahnnelId, List<GroupUserEntity> groupUserList);
+  // Future<String> getVideoChatInfo(String uid);
 }

@@ -59,7 +59,9 @@ class ChatRepositoryImpl implements ChatRepository {
   @override
   Future<Either<Failure, void>> getCreateGroup(GroupEntity groupEntity) async {
     try {
-      return Right(await chatRemoteDataSource.getCreateGroup(groupEntity));
+      return Right(await chatRemoteDataSource
+          .getCreateGroup(groupEntity)
+          .timeout(const Duration(seconds: 5)));
     } catch (e) {
       return Left(ServerFailure());
     }
@@ -98,9 +100,10 @@ class ChatRepositoryImpl implements ChatRepository {
   }
 
   @override
-  Future<Either<Failure, void>> joinGroup(GroupEntity groupEntity) async {
+  Future<Either<Failure, void>> joinGroup(
+      GroupEntity groupEntity, String uid) async {
     try {
-      return Right(await chatRemoteDataSource.joinGroup(groupEntity));
+      return Right(await chatRemoteDataSource.joinGroup(groupEntity, uid));
     } catch (e) {
       return Left(ServerFailure());
     }
@@ -123,6 +126,16 @@ class ChatRepositoryImpl implements ChatRepository {
   Future<Either<Failure, void>> updateGroup(GroupEntity groupEntity) async {
     try {
       return Right(await chatRemoteDataSource.updateGroup(groupEntity));
+    } catch (e) {
+      return Left(ServerFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, GroupEntity>> getSingleGroupDetail(
+      String groupId) async {
+    try {
+      return Right(await chatRemoteDataSource.getSingleGroupDetail(groupId));
     } catch (e) {
       return Left(ServerFailure());
     }

@@ -17,10 +17,16 @@ class GetGroupEvent extends GroupEvent {}
 
 class JoinGroupEvent extends GroupEvent {
   GroupEntity groupEntity;
-  JoinGroupEvent({required this.groupEntity});
+  String uid;
+  JoinGroupEvent({required this.groupEntity, required this.uid});
 }
 
 class UpdateGroupEvent extends GroupEvent {
   GroupEntity groupEntity;
   UpdateGroupEvent({required this.groupEntity});
+}
+
+class GetSingleGroupEvent extends GroupEvent {
+  String uid;
+  GetSingleGroupEvent({required this.uid});
 }

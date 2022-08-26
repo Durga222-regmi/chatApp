@@ -5,7 +5,9 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? title;
   List<Widget>? actionWidgets;
   Widget? leading;
-  CustomAppBar({Key? key, this.title, this.actionWidgets, this.leading})
+  List<Text>? extraTitle;
+  CustomAppBar(
+      {Key? key, this.title, this.actionWidgets, this.leading, this.extraTitle})
       : super(key: key);
 
   @override
@@ -18,10 +20,21 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
         elevation: 0,
         actions: actionWidgets ?? [Container()],
-        centerTitle: true,
         backgroundColor: AppConstant.PRIMARY_COLOR,
-        title: Text(
-          title ?? "",
+        title: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title ?? "",
+            ),
+            if (extraTitle != null) ...{
+              const SizedBox(
+                height: 4,
+              ),
+              for (var i in extraTitle!) i,
+            }
+          ],
         ));
   }
 

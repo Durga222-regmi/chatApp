@@ -15,6 +15,13 @@ class GroupJoining extends GroupState {}
 
 class GroupJoined extends GroupState {}
 
+class GetSingleGroupStateLoaded extends GroupState {
+  GroupEntity groupEntity;
+  GetSingleGroupStateLoaded({required this.groupEntity});
+  @override
+  List<Object> get props => [groupEntity];
+}
+
 class GroupJoinFailure extends GroupState {
   final String joinFailureMsg;
   const GroupJoinFailure({required this.joinFailureMsg});

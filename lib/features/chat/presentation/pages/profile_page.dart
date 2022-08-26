@@ -35,7 +35,7 @@ class ProfilePage extends StatelessWidget {
                 child: CircleAvatar(
                   radius: 50,
                   backgroundImage: NetworkImage(
-                      userEntity.profileUrl ?? AppConstant.defaulutUrl),
+                      userEntity.profileUrl ?? AppConstant.defaultUrl),
                 ),
               ),
               const SizedBox(

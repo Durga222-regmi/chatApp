@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:group_chat_fb/core/enum/enums.dart';
+import 'package:group_chat_fb/features/authentication/data/model/user_model.dart';
 import 'package:group_chat_fb/features/chat/data/datasources/remote_data_source/chat_remote_data_source.dart';
 import 'package:group_chat_fb/features/chat/data/model/group_model.dart';
 import 'package:group_chat_fb/features/chat/data/model/my_chat_model.dart';
@@ -31,44 +32,55 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
         .doc(myChatEntity.recipientUID)
         .collection("myChat");
     final myNewChatCurrentUser = MyChatModel(
-      channelId: myChatEntity.channelId,
-      senderName: myChatEntity.senderName,
-      time: myChatEntity.time,
-      recipientName: myChatEntity.recipientName,
-      recipientPhoneNumber: myChatEntity.recipientPhoneNumber,
-      isArchived: myChatEntity.isArchived,
-      isRead: myChatEntity.isRead,
-      profileUrl: myChatEntity.profileUrl,
-      recentTextMessage: myChatEntity.recentTextMessage,
-      recipientUID: myChatEntity.recipientUID,
-      senderPhoneNumber: myChatEntity.senderPhoneNumber,
-      subjectName: myChatEntity.subjectName,
-      senderUID: myChatEntity.senderUID,
-    ).toDocument();
+            channelId: myChatEntity.channelId,
+            senderName: myChatEntity.senderName,
+            time: myChatEntity.time,
+            recipientName: myChatEntity.recipientName,
+            recipientPhoneNumber: myChatEntity.recipientPhoneNumber,
+            isArchived: myChatEntity.isArchived,
+            isRead: myChatEntity.isRead,
+            profileUrl: myChatEntity.profileUrl,
+            recentTextMessage: myChatEntity.recentTextMessage,
+            recipientUID: myChatEntity.recipientUID,
+            senderPhoneNumber: myChatEntity.senderPhoneNumber,
+            subjectName: myChatEntity.subjectName,
+            senderUID: myChatEntity.senderUID,
+            isGroup: myChatEntity.isGroup)
+        .toDocument();
     final myNewChatOtherUser = MyChatModel(
-      channelId: myChatEntity.channelId,
-      senderName: myChatEntity.senderName,
-      time: myChatEntity.time,
-      recipientName: myChatEntity.recipientName,
-      recipientPhoneNumber: myChatEntity.recipientPhoneNumber,
-      isArchived: myChatEntity.isArchived,
-      isRead: myChatEntity.isRead,
-      profileUrl: myChatEntity.profileUrl,
-      recentTextMessage: myChatEntity.recentTextMessage,
-      recipientUID: myChatEntity.recipientUID,
-      senderPhoneNumber: myChatEntity.senderPhoneNumber,
-      subjectName: myChatEntity.subjectName,
-      senderUID: myChatEntity.senderUID,
-    ).toDocument();
+            channelId: myChatEntity.channelId,
+            senderName: myChatEntity.senderName,
+            time: myChatEntity.time,
+            recipientName: myChatEntity.recipientName,
+            recipientPhoneNumber: myChatEntity.recipientPhoneNumber,
+            isArchived: myChatEntity.isArchived,
+            isRead: myChatEntity.isRead,
+            profileUrl: myChatEntity.profileUrl,
+            recentTextMessage: myChatEntity.recentTextMessage,
+            recipientUID: myChatEntity.recipientUID,
+            senderPhoneNumber: myChatEntity.senderPhoneNumber,
+            subjectName: myChatEntity.subjectName,
+            senderUID: myChatEntity.senderUID,
+            isGroup: myChatEntity.isGroup)
+        .toDocument();
 
-    myChatRef.doc(myChatEntity.recipientUID).get().then((myChatDoc) {
+    await myChatRef
+        .doc(myChatEntity.recipientUID)
+        .get()
+        .then((myChatDoc) async {
       if (!myChatDoc.exists) {
-        myChatRef.doc(myChatEntity.recipientUID).set(myNewChatOtherUser);
-        otherChatReference.doc(myChatEntity.senderUID).set(myNewChatOtherUser);
+        await myChatRef.doc(myChatEntity.recipientUID).set(myNewChatOtherUser);
+        await otherChatReference
+            .doc(myChatEntity.senderUID)
+            .set(myNewChatOtherUser);
         return;
       } else {
-        myChatRef.doc(myChatEntity.recipientUID).update(myNewChatCurrentUser);
-        otherChatReference.doc(myChatEntity.senderUID).set(myNewChatOtherUser);
+        await myChatRef
+            .doc(myChatEntity.recipientUID)
+            .update(myNewChatCurrentUser);
+        await otherChatReference
+            .doc(myChatEntity.senderUID)
+            .update(myNewChatOtherUser);
         return;
       }
     });
@@ -138,16 +150,33 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
   Future<void> getCreateGroup(GroupEntity groupEntity) async {
     final groupCollection = firebaseFirestore.collection("groups");
     final groupId = groupCollection.doc().id;
+    final userdoc = await firebaseFirestore
+        .collection("users")
+        .doc(groupEntity.admin!.uid)
+        .get();
+    final adminUser = UserModel.fromDocument(userdoc);
+
+    final groupAdmin = GroupAdminModel(
+        uid: adminUser.userId,
+        name: adminUser.name,
+        profileUrl: adminUser.profileUrl);
+
     groupCollection.doc(groupId).get().then((groupDoc) {
       final newGroup = GroupModel(
-        groupId: groupId,
-        creationTime: groupEntity.creationTime,
-        groupName: groupEntity.groupName,
-        joinUsers: groupEntity.joinUsers,
-        groupProfileImage: groupEntity.groupProfileImage,
-        lastMessage: groupEntity.lastMessage,
-        limitUsers: groupEntity.limitUsers,
-      ).toDocument();
+          groupId: groupId,
+          creationTime: groupEntity.creationTime,
+          groupName: groupEntity.groupName,
+          joinUsers: groupEntity.joinUsers,
+          groupProfileImage: groupEntity.groupProfileImage,
+          lastMessage: groupEntity.lastMessage,
+          limitUsers: groupEntity.limitUsers,
+          admin: groupAdmin,
+          users: [
+            GroupUserModel(
+                uid: groupAdmin.uid,
+                name: groupAdmin.name,
+                profileUrl: groupAdmin.profileUrl)
+          ]).toDocument();
       if (!groupDoc.exists) {
         groupCollection.doc(groupId).set(newGroup);
         return;
@@ -161,13 +190,14 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
   @override
   Stream<List<GroupEntity>> getGroups() {
     final groupCollection = firebaseFirestore.collection("groups");
+
     return groupCollection
         .orderBy("creationTime", descending: true)
         .snapshots()
         .map((querySnapshot) {
-      return querySnapshot.docs
-          .map((queryDoc) => GroupModel.fromSnapshot(queryDoc))
-          .toList();
+      return querySnapshot.docs.map((queryDoc) {
+        return GroupModel.fromSnapshot(queryDoc);
+      }).toList();
     });
   }
 
@@ -199,14 +229,57 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
   }
 
   @override
-  Future<void> joinGroup(GroupEntity groupEntity) async {
+  Future<void> joinGroup(GroupEntity groupEntity, String uid) async {
     final groupChannelCollection =
         firebaseFirestore.collection("groupChatChannel");
 
-    groupChannelCollection.doc(groupEntity.groupId).get().then((groupChannel) {
+    groupChannelCollection
+        .doc(groupEntity.groupId)
+        .get()
+        .then((groupChannel) async {
       if (!groupChannel.exists) {
+        final groupDoc = await firebaseFirestore
+            .collection("groups")
+            .doc(groupEntity.groupId)
+            .get();
+
+        final userFromFirestore =
+            await firebaseFirestore.collection("users").doc(uid).get();
+
+        final userDetail = UserModel.fromDocument(userFromFirestore);
+
+        final userToBeAdded = GroupUserModel(
+                uid: userDetail.userId,
+                name: userDetail.name,
+                profileUrl: userDetail.profileUrl)
+            .toDocument();
+
+        final List<dynamic> listOfUsers = await groupDoc.get("users");
+        bool userAlreadyExists = false;
+
+        listOfUsers.map((e) {
+          if (e["uid"] == uid) {
+            userAlreadyExists = true;
+            return;
+          }
+        });
+
         final channelId = {"groupChannelId": groupEntity.groupId};
-        groupChannelCollection.doc(groupEntity.groupId).set(channelId);
+        await groupChannelCollection.doc(groupEntity.groupId).set(channelId);
+        groupChannelCollection.doc(groupEntity.groupId);
+        if (!userAlreadyExists) {
+          await groupDoc.reference.update({
+            "users": FieldValue.arrayUnion([userToBeAdded])
+          });
+
+          final List<dynamic> newUserList = await groupDoc.get("users");
+
+          await groupDoc.reference
+              .update({"joinUsers": "${newUserList.length + 1}"});
+        } else {
+          return;
+        }
+
         return;
       }
       return;
@@ -219,8 +292,6 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
     final messageReference = _getMessageReference(messageType, channelID);
 
     final messageId = messageReference.doc().id;
-
-    log("the message id is:$messageId");
 
     final newMessage = TextMessageModel(
             content: textMessageEntity.content,
@@ -303,5 +374,13 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
             .collection("message");
 
     return messageReference;
+  }
+
+  @override
+  Future<GroupEntity> getSingleGroupDetail(String groupId) async {
+    final groupDoc =
+        await firebaseFirestore.collection("groups").doc(groupId).get();
+
+    return GroupModel.fromSnapshot(groupDoc);
   }
 }

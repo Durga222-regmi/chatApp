@@ -2,21 +2,37 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:group_chat_fb/features/chat/domain/entity/my_chat_entity.dart';
 
 class MyChatModel extends MyChatEntity {
+  @override
   final String? senderName;
+  @override
   final String? channelId;
+  @override
   final String? recipientName;
+  @override
   final String? senderUID;
+  @override
   final String? profileUrl;
+  @override
   final String? recentTextMessage;
+  @override
   final bool? isRead;
+  @override
   final String? recipientUID;
+  @override
   final Timestamp? time;
+  @override
   final bool? isArchived;
+  @override
   final String? recipientPhoneNumber;
+  @override
   final String? senderPhoneNumber;
+  @override
   final String? subjectName;
+  @override
   final String? communicationType;
-  MyChatModel(
+  @override
+  final bool? isGroup;
+  const MyChatModel(
       {this.channelId,
       this.communicationType,
       this.isArchived,
@@ -30,6 +46,7 @@ class MyChatModel extends MyChatEntity {
       this.senderPhoneNumber,
       this.senderUID,
       this.subjectName,
+      this.isGroup,
       this.time})
       : super(
             senderName: senderName,
@@ -45,7 +62,8 @@ class MyChatModel extends MyChatEntity {
             senderUID: senderUID,
             recipientUID: recipientUID,
             subjectName: subjectName,
-            time: time);
+            time: time,
+            isGroup: isGroup);
 
   factory MyChatModel.fromSnapshot(DocumentSnapshot snapshot) {
     return MyChatModel(
@@ -63,6 +81,7 @@ class MyChatModel extends MyChatEntity {
       senderPhoneNumber: snapshot.get('senderPhoneNumber'),
       subjectName: snapshot.get('subjectName'),
       communicationType: snapshot.get('communicationType'),
+      isGroup: snapshot.get("isGroup") ?? false,
     );
   }
 
@@ -81,7 +100,8 @@ class MyChatModel extends MyChatEntity {
       "recipientPhoneNumber": recipientPhoneNumber,
       "senderPhoneNumber": senderPhoneNumber,
       "subjectName": subjectName,
-      "communicationType": communicationType
+      "communicationType": communicationType,
+      "isGroup": isGroup
     };
   }
 }

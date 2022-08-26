@@ -98,4 +98,14 @@ class AuthRepositoryImpl implements AuthRepository {
       return Left(ServerFailure());
     }
   }
+
+  @override
+  Future<Either<Failure, void>> updateChattingWith(
+      List<String> users, String uid) async {
+    try {
+      return Right(await remoteDataSource.updateChattingWith(users, uid));
+    } catch (e) {
+      return Left(ServerFailure());
+    }
+  }
 }

@@ -8,21 +8,29 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:group_chat_fb/app_constant.dart';
 import 'package:group_chat_fb/core/dynamic_widgets/custom_app_bar.dart';
 import 'package:group_chat_fb/core/enum/enums.dart';
+import 'package:group_chat_fb/features/authentication/presentation/bloc/auth/bloc/auth_bloc.dart';
 import 'package:group_chat_fb/features/chat/domain/entity/group_entity.dart';
 import 'package:group_chat_fb/features/chat/domain/entity/my_chat_entity.dart';
 import 'package:group_chat_fb/features/chat/domain/entity/single_chat_entity.dart';
 import 'package:group_chat_fb/features/chat/domain/entity/text_message_entity.dart';
 import 'package:group_chat_fb/features/chat/presentation/bloc/chat/chat_bloc.dart';
 import 'package:group_chat_fb/features/chat/presentation/bloc/group/group_bloc.dart';
+import 'package:group_chat_fb/features/chat/presentation/bloc/myChatBloc/my_chat_bloc_bloc.dart';
+import 'package:group_chat_fb/features/chat/presentation/pages/group_member_page.dart';
 import 'package:intl/intl.dart';
 
 class SingleChatPage extends StatefulWidget {
   SingleChatEntity singleChatEntity;
+  MessageType messageType;
+  String channelId;
 
   static const routeName = "/single_chat_page";
-  MessageType messageType;
+
   SingleChatPage(
-      {Key? key, required this.singleChatEntity, required this.messageType})
+      {Key? key,
+      required this.singleChatEntity,
+      required this.messageType,
+      required this.channelId})
       : super(key: key);
 
   @override
@@ -35,7 +43,7 @@ class _SingleChatPageState extends State<SingleChatPage> {
   final ScrollController _messageScrollController = ScrollController();
   final bool _changeKeyBoardType = false;
   final int _menuIndex = 0;
-  ChatBloc? chatBloc;
+
   String? singleChannelId;
 
   @override
@@ -49,6 +57,16 @@ class _SingleChatPageState extends State<SingleChatPage> {
           channelId: widget.singleChatEntity.groupId!,
           messageType: MessageType.group));
     }
+    if (widget.channelId != "") {
+      BlocProvider.of<ChatBloc>(context).add(GetTextMessageEvent(
+          channelId: widget.channelId, messageType: widget.messageType));
+    }
+
+    BlocProvider.of<AuthBloc>(context).add(UpdateChattingWithEvent(
+        uid: widget.singleChatEntity.uid!,
+        users: widget.messageType == MessageType.group
+            ? widget.singleChatEntity.userList!
+            : [widget.singleChatEntity.groupId!]));
 
     super.initState();
   }
@@ -57,63 +75,134 @@ class _SingleChatPageState extends State<SingleChatPage> {
   void dispose() {
     _messageController.dispose();
     _messageScrollController.dispose();
+    BlocProvider.of<AuthBloc>(context).add(UpdateChattingWithEvent(
+        uid: widget.singleChatEntity.uid!, users: const []));
 
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: CustomAppBar(
-        title: widget.singleChatEntity.groupName,
-        leading: GestureDetector(
-          onTap: () {
-            Navigator.pop(context);
-          },
-          child: const Icon(
-            Icons.arrow_back_outlined,
-          ),
-        ),
-      ),
-      body: BlocBuilder<ChatBloc, ChatState>(builder: (context, chatState) {
-        if (chatState is ChatChannelCreated) {
-          if (widget.messageType == MessageType.oneToOne) {
-            singleChannelId = chatState.channelID;
-            log("yess");
-            BlocProvider.of<ChatBloc>(context).add(GetTextMessageEvent(
-                channelId: widget.messageType == MessageType.oneToOne
-                    ? chatState.channelID
-                    : widget.singleChatEntity.groupId.toString(),
-                messageType: widget.messageType));
-          }
-        }
-
-        if (chatState is ChatLoaded) {
-          return Column(
+    return WillPopScope(
+      onWillPop: () async {
+        BlocProvider.of<MyChatBloc>(context)
+            .add(GetMyChatEvent(uid: widget.singleChatEntity.uid!));
+        return true;
+      },
+      child: Scaffold(
+        appBar: CustomAppBar(
+          title: widget.singleChatEntity.groupName,
+          leading: Row(
             children: [
-              _messageListWidget(chatState.textMessages),
-              _sendMessageTextField(),
-            ],
-          );
-        } else if (chatState is ChatFailure) {
-          return Center(
-            child: Text(chatState.failureMessage),
-          );
-        } else {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: const [
-                CircularProgressIndicator(
-                  backgroundColor: AppConstant.PRIMARY_COLOR,
+              GestureDetector(
+                onTap: () {
+                  Navigator.pop(context);
+                },
+                child: const Icon(
+                  Icons.arrow_back_outlined,
                 ),
-                Text("Loading messages...")
-              ],
+              ),
+              ClipOval(
+                child: SizedBox(
+                    height: 20,
+                    child: Image.network(widget.singleChatEntity.photoUrl ??
+                        AppConstant.defaultUrl)),
+              )
+            ],
+          ),
+          actionWidgets: [
+            const SizedBox(
+              width: 20,
             ),
-          );
-        }
-      }),
+            const Icon(Icons.video_call_outlined),
+            const SizedBox(
+              width: 10,
+            ),
+
+            if (widget.messageType == MessageType.group) ...{
+              PopupMenuButton<MenuItem>(
+                itemBuilder: (context) {
+                  return [
+                    PopupMenuItem(
+                        child: const Text("Members"),
+                        onTap: () async {
+                          await Future.delayed(
+                              const Duration(milliseconds: 10));
+
+                          Navigator.pushNamed(
+                              context, GroupMemberPage.routeName,
+                              arguments: widget.singleChatEntity.groupId);
+
+                          log("going...");
+                        }),
+                    PopupMenuItem(
+                      child: const Text("Leave group"),
+                      onTap: () {},
+                    ),
+                  ];
+                },
+              )
+            },
+
+            // GestureDetector(
+
+            //     onTap: () {
+            //       pop
+            //       showDialog(
+            //           context: context,
+            //           builder: (ctx) {
+            //             return ActionWidgetForSingleChat(
+            //               messageType: widget.messageType,
+            //               chatName: widget.singleChatEntity.groupName!,
+            //               profileUrl: widget.singleChatEntity.photoUrl ??
+            //                   AppConstant.defaultUrl,
+            //             );
+            //           });
+            //     },
+            //     child: const Icon(Icons.more_vert_outlined)),
+            const SizedBox(
+              width: 10,
+            ),
+          ],
+        ),
+        body: BlocBuilder<ChatBloc, ChatState>(builder: (context, chatState) {
+          if (chatState is ChatChannelCreated) {
+            if (widget.messageType == MessageType.oneToOne) {
+              singleChannelId = chatState.channelID;
+
+              BlocProvider.of<ChatBloc>(context).add(GetTextMessageEvent(
+                  channelId: singleChannelId!,
+                  messageType: widget.messageType));
+            }
+          }
+
+          if (chatState is ChatLoaded) {
+            return Column(
+              children: [
+                _messageListWidget(chatState.textMessages),
+                _sendMessageTextField(),
+              ],
+            );
+          } else if (chatState is ChatFailure) {
+            return Center(
+              child: Text(chatState.failureMessage),
+            );
+          } else if (chatState is ChatLoading ||
+              chatState is ChatChannelCreated ||
+              chatState is ChatInitial) {
+            return const Center(
+              child: Text(
+                "",
+                style: TextStyle(color: AppConstant.BORDER_COLOR),
+              ),
+            );
+          } else {
+            return const Center(
+              child: Text("can't load the message"),
+            );
+          }
+        }),
+      ),
     );
   }
 
@@ -229,12 +318,13 @@ class _SingleChatPageState extends State<SingleChatPage> {
             ),
             GestureDetector(
               onTap: () {
-                log("channel id when sending:$singleChannelId");
                 if (_messageController.text.isNotEmpty) {
                   BlocProvider.of<ChatBloc>(context).add(SendTextMessageEvent(
                       channelId: widget.messageType == MessageType.group
                           ? widget.singleChatEntity.groupId!
-                          : singleChannelId!,
+                          : widget.channelId != ""
+                              ? widget.channelId
+                              : singleChannelId!,
                       textMessageEntity: TextMessageEntity(
                           content: _messageController.text,
                           time: Timestamp.now(),
@@ -242,6 +332,21 @@ class _SingleChatPageState extends State<SingleChatPage> {
                           senderName: widget.singleChatEntity.userName,
                           type: "TEXT"),
                       messageType: widget.messageType));
+                  BlocProvider.of<MyChatBloc>(context).add(AddToMyChatEvent(
+                    myChatEntity: MyChatEntity(
+                        channelId: widget.channelId != ""
+                            ? widget.channelId
+                            : singleChannelId ??
+                                widget.singleChatEntity.groupId,
+                        communicationType: "Text",
+                        recipientUID: widget.singleChatEntity.groupId,
+                        profileUrl: widget.singleChatEntity.photoUrl,
+                        recipientName: widget.singleChatEntity.groupName,
+                        recentTextMessage: _messageController.text,
+                        senderUID: widget.singleChatEntity.uid,
+                        time: Timestamp.now(),
+                        isGroup: widget.messageType == MessageType.group),
+                  ));
 
                   if (widget.messageType == MessageType.group) {
                     BlocProvider.of<GroupBloc>(context).add(UpdateGroupEvent(
@@ -250,13 +355,13 @@ class _SingleChatPageState extends State<SingleChatPage> {
                             creationTime: Timestamp.now(),
                             lastMessage: _messageController.text)));
                   } else {
-                    BlocProvider.of<ChatBloc>(context).add(AddToMyChatEvent(
-                        myChatEntity: MyChatEntity(
-                            channelId: singleChannelId,
-                            communicationType: "Text",
-                            recipientUID: widget.singleChatEntity.uid,
-                            recipientName: widget.singleChatEntity.groupName,
-                            recentTextMessage: _messageController.text)));
+                    BlocProvider.of<MyChatBloc>(context)
+                        .add(GetMyChatEvent(uid: widget.singleChatEntity.uid!));
+                    BlocProvider.of<ChatBloc>(context).add(GetTextMessageEvent(
+                        channelId: widget.channelId != ""
+                            ? widget.channelId
+                            : singleChannelId!,
+                        messageType: MessageType.oneToOne));
                   }
 
                   setState(() {

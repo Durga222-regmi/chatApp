@@ -16,6 +16,7 @@ import 'package:group_chat_fb/features/authentication/domain/usecases/is_signed_
 import 'package:group_chat_fb/features/authentication/domain/usecases/sign_in_usecase.dart';
 import 'package:group_chat_fb/features/authentication/domain/usecases/sign_out_usecase.dart';
 import 'package:group_chat_fb/features/authentication/domain/usecases/sign_up_use_case.dart';
+import 'package:group_chat_fb/features/authentication/domain/usecases/update_chatting_with_usecase.dart';
 import 'package:group_chat_fb/features/authentication/presentation/bloc/auth/bloc/auth_bloc.dart';
 import 'package:group_chat_fb/features/authentication/presentation/bloc/credential/bloc/credential_bloc.dart';
 import 'package:group_chat_fb/features/authentication/presentation/bloc/user/bloc/user_bloc.dart';
@@ -32,10 +33,12 @@ import 'package:group_chat_fb/features/chat/domain/usecases/chat/send_text_messa
 import 'package:group_chat_fb/features/chat/domain/usecases/group/create_new_group_usecase.dart';
 import 'package:group_chat_fb/features/chat/domain/usecases/group/get_create_group_usecase.dart';
 import 'package:group_chat_fb/features/chat/domain/usecases/group/get_group_usecase.dart';
+import 'package:group_chat_fb/features/chat/domain/usecases/group/get_single_group_usecase.dart';
 import 'package:group_chat_fb/features/chat/domain/usecases/group/join_group_usecase.dart';
 import 'package:group_chat_fb/features/chat/domain/usecases/group/update_group_usecase.dart';
 import 'package:group_chat_fb/features/chat/presentation/bloc/chat/chat_bloc.dart';
 import 'package:group_chat_fb/features/chat/presentation/bloc/group/group_bloc.dart';
+import 'package:group_chat_fb/features/chat/presentation/bloc/myChatBloc/my_chat_bloc_bloc.dart';
 
 GetIt sl = GetIt.instance;
 
@@ -43,6 +46,7 @@ Future<void> init() async {
   // Bloc
 
   sl.registerFactory<AuthBloc>(() => AuthBloc(
+      updateChattingWithUsecase: sl.call(),
       getCurrentUserIdUsecase: sl.call(),
       isSignedInUsecase: sl.call(),
       signOutUseCase: sl.call()));
@@ -54,21 +58,32 @@ Future<void> init() async {
       signUpUsecase: sl.call()));
   sl.registerFactory<UserBloc>(() =>
       UserBloc(getAllUserUsecase: sl.call(), getUpdateUserUsecase: sl.call()));
-  sl.registerFactory<ChatBloc>(() => ChatBloc(
-      addToMyChatUseCase: sl.call(),
+  sl.registerFactory<ChatBloc>(
+    () => ChatBloc(
       createOneToOneChannelUsecase: sl.call(),
       getTextMessageUseCase: sl.call(),
-      sendTextMessageUseCase: sl.call()));
+      sendTextMessageUseCase: sl.call(),
+    ),
+  );
+  sl.registerFactory<MyChatBloc>(
+    () => MyChatBloc(
+      addToMyChatUseCase: sl.call(),
+      getMyChatUsecase: sl.call(),
+    ),
+  );
   sl.registerFactory<GroupBloc>(() => GroupBloc(
       getCreateGroupUsecase: sl.call(),
       getGroupUsecase: sl.call(),
       joinGroupUsecase: sl.call(),
-      updateGroupUsecase: sl.call()));
+      updateGroupUsecase: sl.call(),
+      getSingleGroupUsecase: sl.call()));
 
 // Usecases
 
   sl.registerLazySingleton<GetCreateGroupUsecase>(
       () => GetCreateGroupUsecase(repository: sl.call()));
+  sl.registerLazySingleton<GetSingleGroupUsecase>(
+      () => GetSingleGroupUsecase(repository: sl.call()));
   sl.registerLazySingleton<AddToMyChatUseCase>(
       () => AddToMyChatUseCase(repository: sl.call()));
   sl.registerLazySingleton<CreateOneToOneChannelUsecase>(
@@ -83,6 +98,8 @@ Future<void> init() async {
       () => SendTextMessageUsecase(repository: sl.call()));
   sl.registerLazySingleton<CreateNewGroupUsecase>(
       () => CreateNewGroupUsecase(repository: sl.call()));
+  sl.registerLazySingleton<UpdateChattingWithUsecase>(
+      () => UpdateChattingWithUsecase(repository: sl.call()));
 
   sl.registerLazySingleton<GetGroupUsecase>(
       () => GetGroupUsecase(repository: sl.call()));

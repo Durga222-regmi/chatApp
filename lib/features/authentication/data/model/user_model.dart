@@ -13,6 +13,8 @@ class UserModel extends UserEntity {
     final String? password,
     final Timestamp? dob,
     final String? gender,
+    final List<String>? chattingWith,
+    final String? pushToken,
   }) : super(
             name: name,
             email: email,
@@ -23,7 +25,9 @@ class UserModel extends UserEntity {
             profileUrl: profileUrl,
             password: password,
             dob: dob,
-            gender: gender);
+            chattingWith: chattingWith,
+            gender: gender,
+            pushToken: pushToken);
 
   factory UserModel.fromDocument(DocumentSnapshot doc) {
     return UserModel(
@@ -36,6 +40,8 @@ class UserModel extends UserEntity {
         phoneNumber: doc["phoneNumber"],
         profileUrl: doc["profileUrl"],
         status: doc["status"],
+        chattingWith: doc["chattingWith"],
+        pushToken: doc["pushToken"],
         userId: doc["userId"]);
   }
 
@@ -51,6 +57,8 @@ class UserModel extends UserEntity {
       "profileUrl": profileUrl,
       "status": status,
       "userId": userId,
+      "chattingWith": chattingWith,
+      "pushToken": pushToken
     };
   }
 }

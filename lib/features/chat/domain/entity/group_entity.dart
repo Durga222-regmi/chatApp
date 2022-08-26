@@ -8,8 +8,11 @@ class GroupEntity extends Equatable {
   final String? limitUsers;
   final Timestamp? creationTime;
   final String? groupId;
-  final String? uid;
+  final GroupAdminEntity? admin;
   final String? lastMessage;
+  final String? uid;
+
+  final List<GroupUserEntity>? users;
 
   const GroupEntity({
     this.creationTime,
@@ -19,6 +22,8 @@ class GroupEntity extends Equatable {
     this.joinUsers,
     this.lastMessage,
     this.limitUsers,
+    this.users,
+    this.admin,
     this.uid,
   });
 
@@ -31,7 +36,25 @@ class GroupEntity extends Equatable {
         limitUsers,
         creationTime,
         groupId,
-        uid,
-        lastMessage
+        admin,
+        lastMessage,
+        users,
+        admin,
+        uid
       ];
+}
+
+class GroupUserEntity {
+  String? uid;
+  String? name;
+  String? profileUrl;
+
+  GroupUserEntity({required this.uid, this.name, this.profileUrl});
+}
+
+class GroupAdminEntity {
+  String? uid;
+  String? name;
+  String? profileUrl;
+  GroupAdminEntity({this.name, required this.uid, this.profileUrl});
 }

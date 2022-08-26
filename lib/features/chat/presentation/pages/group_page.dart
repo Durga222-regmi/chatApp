@@ -3,8 +3,10 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:group_chat_fb/app_constant.dart';
+import 'package:group_chat_fb/core/dynamic_widgets/custom_chat_tile_widget.dart';
 import 'package:group_chat_fb/core/enum/enums.dart';
 import 'package:group_chat_fb/features/authentication/presentation/bloc/user/bloc/user_bloc.dart';
+import 'package:group_chat_fb/features/chat/domain/entity/group_entity.dart';
 import 'package:group_chat_fb/features/chat/domain/entity/single_chat_entity.dart';
 import 'package:group_chat_fb/features/chat/presentation/bloc/group/group_bloc.dart';
 import 'package:group_chat_fb/features/chat/presentation/pages/single_chat_page.dart';
@@ -12,7 +14,7 @@ import 'package:group_chat_fb/features/chat/presentation/widgets/search_field.da
 
 class GroupPage extends StatefulWidget {
   String uid;
-  static const routeName = "group_page";
+  static const routeName = "/group_page";
   GroupPage({Key? key, required this.uid}) : super(key: key);
 
   @override
@@ -38,15 +40,7 @@ class _GroupPageState extends State<GroupPage> {
   }
 
   @override
-  void didChangeDependencies() {
-    BlocProvider.of<GroupBloc>(context).add(GetGroupEvent());
-
-    super.didChangeDependencies();
-  }
-
-  @override
   void dispose() {
-    log("disposing...");
     super.dispose();
   }
 
@@ -109,91 +103,38 @@ class _GroupPageState extends State<GroupPage> {
                             shrinkWrap: true,
                             itemCount: filterGroup.length,
                             itemBuilder: (context, index) {
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 10),
-                                child: Column(
-                                  children: [
-                                    GestureDetector(
-                                      onTap: () {
-                                        BlocProvider.of<GroupBloc>(context).add(
-                                            JoinGroupEvent(
-                                                groupEntity:
-                                                    filterGroup[index]));
+                              final group = filterGroup[index];
+                              return CustomChatTile(
+                                messageType: MessageType.group,
+                                name: group.groupName,
+                                onTap: () {
+                                  List<String> usersId = [];
+                                  filterGroup[index].users?.forEach((element) {
+                                    usersId.add(element.uid!);
+                                  });
 
-                                        Navigator.pushNamed(
-                                            context, SingleChatPage.routeName,
-                                            arguments: [
-                                              SingleChatEntity(
-                                                  userName: user.name,
-                                                  groupName: filterGroup[index]
-                                                      .groupName,
-                                                  groupId: filterGroup[index]
-                                                      .groupId,
-                                                  uid: widget.uid),
-                                              MessageType.group
-                                            ]);
-                                      },
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(5),
-                                            border: Border.all(
-                                                width: 0.5,
-                                                color: Colors.grey[500]!)),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(15),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    filterGroup[index]
-                                                        .groupName
-                                                        .toString(),
-                                                    style: const TextStyle(
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.w500),
-                                                  ),
-                                                  const SizedBox(
-                                                    height: 10,
-                                                  ),
-                                                  Text(
-                                                    filterGroup[index]
-                                                        .lastMessage
-                                                        .toString(),
-                                                    style: TextStyle(
-                                                        color:
-                                                            Colors.grey[500]),
-                                                  ),
-                                                ],
-                                              ),
-                                              CircleAvatar(
-                                                radius: 22,
-                                                backgroundImage: NetworkImage(
-                                                  filterGroup[index]
-                                                          .groupProfileImage ??
-                                                      "https://cdn.vectorstock.com/i/1000x1000/45/79/male-avatar-profile-picture-silhouette-light-vector-4684579.webp",
-                                                ),
-                                              )
-                                            ],
-                                          ),
+                                  BlocProvider.of<GroupBloc>(context).add(
+                                      JoinGroupEvent(
+                                          groupEntity: filterGroup[index],
+                                          uid: widget.uid));
+
+                                  Navigator.pushNamed(
+                                      context, SingleChatPage.routeName,
+                                      arguments: [
+                                        SingleChatEntity(
+                                          userName: user.name,
+                                          groupName:
+                                              filterGroup[index].groupName,
+                                          groupId: filterGroup[index].groupId,
+                                          uid: widget.uid,
+                                          photoUrl: filterGroup[index]
+                                              .groupProfileImage,
+                                          userList: usersId,
                                         ),
-                                      ),
-                                    ),
-                                    if (index == filterGroup.length - 1) ...{
-                                      const SizedBox(
-                                        height: 50,
-                                      )
-                                    }
-                                  ],
-                                ),
+                                        MessageType.group
+                                      ]);
+                                },
+                                profileUrl: group.groupProfileImage,
                               );
                             },
                           ),

@@ -10,11 +10,12 @@ class JoinGroupUsecase extends UseCase<void, JoinGroupUsecasePrams> {
 
   @override
   Future<Either<Failure, void>> call(JoinGroupUsecasePrams params) async {
-    return await repository.joinGroup(params.groupEntity);
+    return await repository.joinGroup(params.groupEntity, params.uid);
   }
 }
 
 class JoinGroupUsecasePrams {
   GroupEntity groupEntity;
-  JoinGroupUsecasePrams({required this.groupEntity});
+  String uid;
+  JoinGroupUsecasePrams({required this.groupEntity, required this.uid});
 }

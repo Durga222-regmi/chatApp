@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:bloc/bloc.dart';
@@ -6,6 +7,7 @@ import 'package:group_chat_fb/core/use_case/usecase.dart';
 import 'package:group_chat_fb/features/chat/domain/entity/group_entity.dart';
 import 'package:group_chat_fb/features/chat/domain/usecases/group/get_create_group_usecase.dart';
 import 'package:group_chat_fb/features/chat/domain/usecases/group/get_group_usecase.dart';
+import 'package:group_chat_fb/features/chat/domain/usecases/group/get_single_group_usecase.dart';
 import 'package:group_chat_fb/features/chat/domain/usecases/group/join_group_usecase.dart';
 import 'package:group_chat_fb/features/chat/domain/usecases/group/update_group_usecase.dart';
 
@@ -19,12 +21,14 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
   GetGroupUsecase getGroupUsecase;
   JoinGroupUsecase joinGroupUsecase;
   UpdateGroupUsecase updateGroupUsecase;
+  GetSingleGroupUsecase getSingleGroupUsecase;
 
   GroupBloc(
       {required this.getCreateGroupUsecase,
       required this.getGroupUsecase,
       required this.joinGroupUsecase,
-      required this.updateGroupUsecase})
+      required this.updateGroupUsecase,
+      required this.getSingleGroupUsecase})
       : super((GroupInitial())) {
     on<GetCreateGroupEvent>((event, emit) async {
       emit(GroupLoading());
@@ -34,7 +38,7 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
 
         final groupEntity = GroupEntity(
             creationTime: event.groupEntity.creationTime,
-            uid: event.groupEntity.uid,
+            admin: event.groupEntity.admin,
             groupName: event.groupEntity.groupName,
             groupProfileImage: imageUrl,
             joinUsers: event.groupEntity.joinUsers,
@@ -54,6 +58,7 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
       final groupsOrFailure = await getGroupUsecase(NoParams());
       await groupsOrFailure.fold(
         (failure) async {
+          log("cannot create group");
           emit(const GroupFailure(failureMessage: "Cannot create group"));
         },
         (groups) async {
@@ -66,8 +71,8 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
     });
     on<JoinGroupEvent>((event, emit) async {
       try {
-        await joinGroupUsecase(
-            JoinGroupUsecasePrams(groupEntity: event.groupEntity));
+        await joinGroupUsecase(JoinGroupUsecasePrams(
+            groupEntity: event.groupEntity, uid: event.uid));
       } catch (e) {
         emit(const GroupJoinFailure(joinFailureMsg: "cannot join group"));
       }
@@ -79,6 +84,22 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
             UpdateGroupUsecasePrams(groupEntity: event.groupEntity));
       } catch (e) {
         emit(const GroupFailure(failureMessage: "cannot update group"));
+      }
+    });
+
+    on<GetSingleGroupEvent>((event, emit) async {
+      emit(GroupLoading());
+      try {
+        final groupEntity = await getSingleGroupUsecase(
+            GetSingleGroupUsecaseParams(uid: event.uid));
+
+        await groupEntity.fold((failure) async {
+          emit(const GroupFailure(failureMessage: "Can't load this group"));
+        }, (groupEntity) {
+          emit(GetSingleGroupStateLoaded(groupEntity: groupEntity));
+        });
+      } catch (e) {
+        emit(const GroupFailure(failureMessage: "Can't load this group"));
       }
     });
   }

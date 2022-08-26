@@ -4,6 +4,7 @@ import 'package:group_chat_fb/core/use_case/usecase.dart';
 import 'package:group_chat_fb/features/authentication/domain/usecases/get_current_user_id_usecase.dart';
 import 'package:group_chat_fb/features/authentication/domain/usecases/is_signed_in_usecase.dart';
 import 'package:group_chat_fb/features/authentication/domain/usecases/sign_out_usecase.dart';
+import 'package:group_chat_fb/features/authentication/domain/usecases/update_chatting_with_usecase.dart';
 
 part 'auth_event.dart';
 part 'auth_state.dart';
@@ -12,11 +13,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final IsSignedInUsecase isSignedInUsecase;
   final SignOutUseCase signOutUseCase;
   final GetCurrentUserIdUsecase getCurrentUserIdUsecase;
+  final UpdateChattingWithUsecase updateChattingWithUsecase;
 
   AuthBloc(
       {required this.getCurrentUserIdUsecase,
       required this.isSignedInUsecase,
-      required this.signOutUseCase})
+      required this.signOutUseCase,
+      required this.updateChattingWithUsecase})
       : super(AuthInitial()) {
     on<AppStartedEvent>((event, emit) async {
       try {
@@ -46,6 +49,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       });
     });
     on<SignedOutEvent>((event, emit) async {
+      final val = await signOutUseCase(NoParams());
+      await val.fold(
+        (l) async {
+          emit(const AuthenticationFailure(message: "Please try again"));
+        },
+        (r) async {
+          emit(UnAuthenticated());
+        },
+      );
+    });
+    on<UpdateChattingWithEvent>((event, emit) async {
       final val = await signOutUseCase(NoParams());
       await val.fold(
         (l) async {

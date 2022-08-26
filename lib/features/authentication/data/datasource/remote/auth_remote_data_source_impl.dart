@@ -37,16 +37,17 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     final uid = await getCurrentUserId();
     userCollection.doc(uid).get().then((firestoreUser) {
       final user = UserModel(
-        name: entity.name,
-        email: entity.email,
-        dob: entity.dob,
-        gender: entity.gender,
-        isOnline: entity.isOnline,
-        phoneNumber: entity.phoneNumber,
-        profileUrl: entity.profileUrl,
-        status: entity.status,
-        userId: uid,
-      ).toDocument();
+              name: entity.name,
+              email: entity.email,
+              dob: entity.dob,
+              gender: entity.gender,
+              isOnline: entity.isOnline,
+              phoneNumber: entity.phoneNumber,
+              profileUrl: entity.profileUrl,
+              status: entity.status,
+              userId: uid,
+              chattingWith: entity.chattingWith)
+          .toDocument();
 
       if (!firestoreUser.exists) {
         userCollection.doc(uid).set(user);
@@ -57,6 +58,16 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         return;
       }
     });
+  }
+
+  @override
+  Future<void> updateChattingWith(List<String>? users, String uid) async {
+    final userDoc = await firebaseFirestore.collection("users").doc(uid).get();
+    if (users == null || users == []) {
+      await userDoc.reference.update({"chattingWith": null});
+    } else {
+      await userDoc.reference.update({"chattingWith": users});
+    }
   }
 
   @override
@@ -167,6 +178,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<void> signOut() async {
     await firebaseAuth.signOut();
+    await gSignIn.signOut();
   }
 
   @override

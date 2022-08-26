@@ -14,4 +14,5 @@ abstract class AuthRemoteDataSource {
 
   Future<void> signOut();
   Future<void> signIn(UserEntity userEntity);
+  Future<void> updateChattingWith(List<String> users, String uid);
 }
