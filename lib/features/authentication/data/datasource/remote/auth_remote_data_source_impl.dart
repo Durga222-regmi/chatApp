@@ -63,7 +63,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<void> updateChattingWith(List<String>? users, String uid) async {
     final userDoc = await firebaseFirestore.collection("users").doc(uid).get();
-    if (users == null || users == []) {
+    if (users == null || users.isEmpty) {
       await userDoc.reference.update({"chattingWith": null});
     } else {
       await userDoc.reference.update({"chattingWith": users});
@@ -177,6 +177,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<void> signOut() async {
+    final currentUser = await getCurrentUserId();
+    final userDoc =
+        await firebaseFirestore.collection("users").doc(currentUser).get();
+    await userDoc.reference.update({"pushToken": null});
+
     await firebaseAuth.signOut();
     await gSignIn.signOut();
   }

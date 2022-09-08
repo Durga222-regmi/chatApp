@@ -140,4 +140,15 @@ class ChatRepositoryImpl implements ChatRepository {
       return Left(ServerFailure());
     }
   }
+
+  @override
+  Future<Either<Failure, void>> updateMessageStatus(String messageId,
+      String status, MessageType messageType, String channelId) async {
+    try {
+      return Right(chatRemoteDataSource.updateMessageStatus(
+          messageId, status, messageType, channelId));
+    } catch (e) {
+      return Left(ServerFailure());
+    }
+  }
 }

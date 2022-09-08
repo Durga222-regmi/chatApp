@@ -46,7 +46,6 @@ Future<void> init() async {
   // Bloc
 
   sl.registerFactory<AuthBloc>(() => AuthBloc(
-      updateChattingWithUsecase: sl.call(),
       getCurrentUserIdUsecase: sl.call(),
       isSignedInUsecase: sl.call(),
       signOutUseCase: sl.call()));
@@ -56,8 +55,10 @@ Future<void> init() async {
       googleAuthUsecase: sl.call(),
       signInUsecase: sl.call(),
       signUpUsecase: sl.call()));
-  sl.registerFactory<UserBloc>(() =>
-      UserBloc(getAllUserUsecase: sl.call(), getUpdateUserUsecase: sl.call()));
+  sl.registerFactory<UserBloc>(() => UserBloc(
+      getAllUserUsecase: sl.call(),
+      getUpdateUserUsecase: sl.call(),
+      updateChattingWithUsecase: sl.call()));
   sl.registerFactory<ChatBloc>(
     () => ChatBloc(
       createOneToOneChannelUsecase: sl.call(),

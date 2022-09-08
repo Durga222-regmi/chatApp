@@ -24,6 +24,9 @@ abstract class ChatRepository {
       MessageType messageType);
   Future<Either<Failure, StreamList<TextMessageEntity>>> getTextMessages(
       MessageType messageType, String channelId);
+
+  Future<Either<Failure, void>> updateMessageStatus(String messageId,
+      String status, MessageType messageType, String channelId);
   Future<Either<Failure, void>> addToMyChat(MyChatEntity myChatEntity);
   Future<Either<Failure, StreamList<MyChatEntity>>> getMyChat(String uid);
   Future<Either<Failure, GroupEntity>> getSingleGroupDetail(String groupId);

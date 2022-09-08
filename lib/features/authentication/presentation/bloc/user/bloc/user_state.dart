@@ -38,3 +38,7 @@ class UserUpdated extends UserState {
   @override
   List<Object> get props => [];
 }
+
+class ChattingWithUserUpdating extends UserState {}
+
+class ChattingWithUserUpdated extends UserState {}

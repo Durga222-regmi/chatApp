@@ -3,7 +3,7 @@ const admin = require("firebase-admin");
 admin.initializeApp();
 
 exports.sendNotification = functions.firestore
-  .document("messages/{groupId1}/{groupId2}/{message}")
+  .document("oneTOOneChatChannel/{channelId}/{message}")
   .onCreate((snap, context) => {
     console.log("----------------start function--------------------");
 
@@ -18,7 +18,7 @@ exports.sendNotification = functions.firestore
     admin
       .firestore()
       .collection("users")
-      .where("id", "==", idTo)
+      .where("userId", "==", idTo)
       .get()
       .then((querySnapshot) => {
         querySnapshot.forEach((userTo) => {
@@ -31,7 +31,7 @@ exports.sendNotification = functions.firestore
             admin
               .firestore()
               .collection("users")
-              .where("id", "==", idFrom)
+              .where("userId", "==", idFrom)
               .get()
               .then((querySnapshot2) => {
                 querySnapshot2.forEach((userFrom) => {

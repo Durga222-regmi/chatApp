@@ -55,7 +55,6 @@ class MyApp extends StatelessWidget {
             "/": (context) {
               return BlocBuilder<AuthBloc, AuthState>(builder: (_, authState) {
                 if (authState is Authenticated) {
-                  FirebaseMessagingService.registerNotification(authState.uid);
                   return ChatHomePage(
                     uid: authState.uid,
                   );

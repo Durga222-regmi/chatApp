@@ -40,7 +40,7 @@ class UserModel extends UserEntity {
         phoneNumber: doc["phoneNumber"],
         profileUrl: doc["profileUrl"],
         status: doc["status"],
-        chattingWith: doc["chattingWith"],
+        chattingWith: List<String>.from(doc["chattingWith"]??[]),
         pushToken: doc["pushToken"],
         userId: doc["userId"]);
   }

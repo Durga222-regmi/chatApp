@@ -301,6 +301,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
             senderId: textMessageEntity.senderId,
             time: textMessageEntity.time,
             type: textMessageEntity.type,
+            status: textMessageEntity.status,
             messageId: messageId)
         .toDocument();
     await messageReference.doc(messageId).set(newMessage);
@@ -382,5 +383,13 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
         await firebaseFirestore.collection("groups").doc(groupId).get();
 
     return GroupModel.fromSnapshot(groupDoc);
+  }
+
+  @override
+  Future<void> updateMessageStatus(String messageId, String status,
+      MessageType messageType, String channelId) async {
+    final messageRef = _getMessageReference(messageType, channelId);
+    final messageDoc = await messageRef.doc(messageId).get();
+    await messageDoc.reference.update({"status": status});
   }
 }

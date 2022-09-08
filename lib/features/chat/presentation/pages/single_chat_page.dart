@@ -8,7 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:group_chat_fb/app_constant.dart';
 import 'package:group_chat_fb/core/dynamic_widgets/custom_app_bar.dart';
 import 'package:group_chat_fb/core/enum/enums.dart';
-import 'package:group_chat_fb/features/authentication/presentation/bloc/auth/bloc/auth_bloc.dart';
+import 'package:group_chat_fb/features/authentication/presentation/bloc/user/bloc/user_bloc.dart';
 import 'package:group_chat_fb/features/chat/domain/entity/group_entity.dart';
 import 'package:group_chat_fb/features/chat/domain/entity/my_chat_entity.dart';
 import 'package:group_chat_fb/features/chat/domain/entity/single_chat_entity.dart';
@@ -17,6 +17,7 @@ import 'package:group_chat_fb/features/chat/presentation/bloc/chat/chat_bloc.dar
 import 'package:group_chat_fb/features/chat/presentation/bloc/group/group_bloc.dart';
 import 'package:group_chat_fb/features/chat/presentation/bloc/myChatBloc/my_chat_bloc_bloc.dart';
 import 'package:group_chat_fb/features/chat/presentation/pages/group_member_page.dart';
+import 'package:group_chat_fb/page_constant.dart';
 import 'package:intl/intl.dart';
 
 class SingleChatPage extends StatefulWidget {
@@ -43,6 +44,7 @@ class _SingleChatPageState extends State<SingleChatPage> {
   final ScrollController _messageScrollController = ScrollController();
   final bool _changeKeyBoardType = false;
   final int _menuIndex = 0;
+  UserBloc? userBloc;
 
   String? singleChannelId;
 
@@ -52,6 +54,7 @@ class _SingleChatPageState extends State<SingleChatPage> {
       setState(() {});
     });
 
+    userBloc = BlocProvider.of<UserBloc>(context);
     if (widget.messageType == MessageType.group) {
       BlocProvider.of<ChatBloc>(context).add(GetTextMessageEvent(
           channelId: widget.singleChatEntity.groupId!,
@@ -62,7 +65,7 @@ class _SingleChatPageState extends State<SingleChatPage> {
           channelId: widget.channelId, messageType: widget.messageType));
     }
 
-    BlocProvider.of<AuthBloc>(context).add(UpdateChattingWithEvent(
+    userBloc!.add(UpdateChattingWithEvent(
         uid: widget.singleChatEntity.uid!,
         users: widget.messageType == MessageType.group
             ? widget.singleChatEntity.userList!
@@ -73,10 +76,11 @@ class _SingleChatPageState extends State<SingleChatPage> {
 
   @override
   void dispose() {
+    userBloc!.add(UpdateChattingWithEvent(
+        uid: widget.singleChatEntity.uid!, users: const []));
+    Future.delayed(const Duration(milliseconds: 50), () {});
     _messageController.dispose();
     _messageScrollController.dispose();
-    BlocProvider.of<AuthBloc>(context).add(UpdateChattingWithEvent(
-        uid: widget.singleChatEntity.uid!, users: const []));
 
     super.dispose();
   }
@@ -87,6 +91,7 @@ class _SingleChatPageState extends State<SingleChatPage> {
       onWillPop: () async {
         BlocProvider.of<MyChatBloc>(context)
             .add(GetMyChatEvent(uid: widget.singleChatEntity.uid!));
+
         return true;
       },
       child: Scaffold(
@@ -114,7 +119,19 @@ class _SingleChatPageState extends State<SingleChatPage> {
             const SizedBox(
               width: 20,
             ),
-            const Icon(Icons.video_call_outlined),
+            GestureDetector(
+                onTap: () {
+                  Navigator.pushNamed(context, PageConstant.videoCallingWidget,
+                      arguments: [
+                        widget.messageType == MessageType.oneToOne
+                            ? widget.channelId
+                            : widget.singleChatEntity.groupId,
+                        widget.messageType,
+                        widget.singleChatEntity.uid,
+                        widget.singleChatEntity.userName,
+                      ]);
+                },
+                child: const Icon(Icons.video_call_outlined)),
             const SizedBox(
               width: 10,
             ),
@@ -230,7 +247,9 @@ class _SingleChatPageState extends State<SingleChatPage> {
               boxAlign: CrossAxisAlignment.start,
               crossAlign: CrossAxisAlignment.end,
               nip: BubbleNip.rightTop,
-              text: message.content);
+              text: message.content,
+              status: message.type,
+              type: message.status);
         } else {
           return _messageLayOut(
               name: message.senderName!,
@@ -241,7 +260,9 @@ class _SingleChatPageState extends State<SingleChatPage> {
               boxAlign: CrossAxisAlignment.start,
               crossAlign: CrossAxisAlignment.start,
               nip: BubbleNip.leftTop,
-              text: message.content);
+              text: message.content,
+              status: message.status,
+              type: message.type);
         }
       },
     ));
@@ -392,6 +413,8 @@ class _SingleChatPageState extends State<SingleChatPage> {
       {required String name,
       required TextAlign alignName,
       Color? nibColor,
+      required String? type,
+      required String? status,
       required String time,
       required TextAlign align,
       required CrossAxisAlignment boxAlign,
@@ -405,25 +428,60 @@ class _SingleChatPageState extends State<SingleChatPage> {
           constraints: BoxConstraints(
             maxWidth: MediaQuery.of(context).size.width * 0.90,
           ),
-          child: Container(
-            padding: const EdgeInsets.all(8),
-            margin: const EdgeInsets.all(3),
-            child: Bubble(
-              color: nibColor,
-              nip: nip,
-              child: Column(
-                crossAxisAlignment: crossAlign,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    text!,
-                    textAlign: align,
-                    style: const TextStyle(fontSize: 12, color: Colors.black),
-                  )
-                ],
-              ),
-            ),
-          ),
+          child: type == "VID_CALL"
+              ? GestureDetector(
+                  onTap: () {
+                    if (status == "CALLED") {
+                      Navigator.pushNamed(
+                          context, PageConstant.videoCallingWidget,
+                          arguments: widget.messageType == MessageType.oneToOne
+                              ? widget.channelId
+                              : widget.singleChatEntity.groupId);
+                    }
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                        border: Border.all(
+                            width: 0.5, color: AppConstant.BORDER_COLOR)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(status == "CALLED"
+                              ? "Incoming video call"
+                              : "Video chat ended"),
+                          Icon(
+                            status == "CALLED" ? Icons.call : Icons.call_end,
+                            color:
+                                status == "CALLED" ? Colors.green : Colors.grey,
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                )
+              : Container(
+                  padding: const EdgeInsets.all(8),
+                  margin: const EdgeInsets.all(3),
+                  child: Bubble(
+                    color: nibColor,
+                    nip: nip,
+                    child: Column(
+                      crossAxisAlignment: crossAlign,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          text!,
+                          textAlign: align,
+                          style: const TextStyle(
+                              fontSize: 12, color: Colors.black),
+                        )
+                      ],
+                    ),
+                  ),
+                ),
         ),
       ],
     );

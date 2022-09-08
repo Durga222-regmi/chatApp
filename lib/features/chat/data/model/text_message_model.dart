@@ -18,6 +18,8 @@ class TextMessageModel extends TextMessageEntity {
   final String? receiverName;
   @override
   final String? messageId;
+  @override
+  final String? status;
 
   TextMessageModel(
       {this.content,
@@ -27,6 +29,7 @@ class TextMessageModel extends TextMessageEntity {
       this.senderId,
       this.senderName,
       this.time,
+      this.status,
       this.type})
       : super(
             content: content,
@@ -36,6 +39,7 @@ class TextMessageModel extends TextMessageEntity {
             senderId: senderId,
             senderName: senderName,
             time: time,
+            status: status,
             type: type);
   factory TextMessageModel.fromSnapshot(DocumentSnapshot snapshot) {
     return TextMessageModel(
@@ -44,6 +48,7 @@ class TextMessageModel extends TextMessageEntity {
       senderName: snapshot.get('senderName'),
       type: snapshot.get('type'),
       time: snapshot.get('time'),
+      status: snapshot.get('status') ?? "NA",
       content: snapshot.get('content'),
       receiverName: snapshot.get('receiverName'),
       messageId: snapshot.get('messageId'),
@@ -55,6 +60,7 @@ class TextMessageModel extends TextMessageEntity {
       "recipientId": recipientId,
       "senderId": senderId,
       "senderName": senderName,
+      "status": status,
       "type": type,
       "time": time,
       "content": content,

@@ -9,5 +9,5 @@ class AppConstant {
 
   static const APP_ID = "77f1db23a9ce485781cb235e5a089017";
   static const TOKEN =
-      "007eJxTYFii5b7IzaSHu/jlRqEdu6+UKZnHWqmcd57DFv50SyDnjE8KDObmaYYpSUbGiZbJqSYWpuYWhslAnmmqaaKBhaWBofltU/bk6HaOZL9Z/gyMUAjiMzMYGhkzMAAAoxcczw==";
+      "007eJxTYFCazVmXu615w7NohRTGiToXpqTrKtus3Rm/5p3S2tA+rccKDObmaYYpSUbGiZbJqSYWpuYWhslAnmmqaaKBhaWBofkMLfFkiRqJ5Nb+UhZGBggE8dkYihLzUvJzGRgAEFMeqw==";
 }

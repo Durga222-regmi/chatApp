@@ -20,7 +20,12 @@ abstract class ChatRemoteDataSource {
       String channelId, MessageType messageType);
   Future<void> addToMyChat(MyChatEntity myChatEntity);
   Stream<List<MyChatEntity>> getMyChat(String uid);
-  Future<GroupEntity> getSingleGroupDetail(String uid);
+  Future<GroupEntity> getSingleGroupDetail(
+    String uid,
+  );
+  Future<void> updateMessageStatus(String messageId, String status,
+      MessageType messageType, String channelId);
+
   // Future<void> createVideoChatChanel(
   //     String cahnnelId, List<GroupUserEntity> groupUserList);
   // Future<String> getVideoChatInfo(String uid);

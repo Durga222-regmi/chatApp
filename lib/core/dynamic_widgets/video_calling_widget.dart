@@ -4,13 +4,27 @@ import 'package:agora_rtc_engine/rtc_engine.dart';
 import 'package:agora_rtc_engine/rtc_remote_view.dart' as RtcRemoteView;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:group_chat_fb/app_constant.dart';
+import 'package:group_chat_fb/core/enum/enums.dart';
+import 'package:group_chat_fb/features/chat/domain/entity/text_message_entity.dart';
+import 'package:group_chat_fb/features/chat/presentation/bloc/chat/chat_bloc.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class VideoCallingWidget extends StatefulWidget {
+  static const routeName = "/video_calling_widget";
   String channelId;
+  MessageType messageType;
+  String senderId;
+  String senderName;
 
-  VideoCallingWidget({Key? key, required this.channelId}) : super(key: key);
+  VideoCallingWidget(
+      {Key? key,
+      required this.channelId,
+      required this.messageType,
+      required this.senderId,
+      required this.senderName})
+      : super(key: key);
 
   @override
   State<VideoCallingWidget> createState() => _VideoCallingWidgetState();
@@ -25,6 +39,14 @@ class _VideoCallingWidgetState extends State<VideoCallingWidget> {
   void initState() {
     super.initState();
     initPlatFormState();
+    BlocProvider.of<ChatBloc>(context).add(SendTextMessageEvent(
+        channelId: widget.channelId,
+        textMessageEntity: TextMessageEntity(
+            type: "VID_CALL",
+            status: "CALLED",
+            senderId: widget.senderId,
+            senderName: widget.senderName),
+        messageType: widget.messageType));
   }
 
   Future<void> initPlatFormState() async {
@@ -36,11 +58,16 @@ class _VideoCallingWidgetState extends State<VideoCallingWidget> {
     var engine = await RtcEngine.createWithContext(context);
     // Define event handling logic
     engine.setEventHandler(
-        RtcEngineEventHandler(joinChannelSuccess: (channel, uid, elapsed) {
+        RtcEngineEventHandler(
+          
+          joinChannelSuccess: (channel, uid, elapsed) {
       setState(() {
         _joined = true;
       });
-    }, userJoined: (uid, elapsed) {
+
+    },
+
+     userJoined: (uid, elapsed) {
       setState(() {
         _remoteUid = uid;
       });
@@ -49,6 +76,7 @@ class _VideoCallingWidgetState extends State<VideoCallingWidget> {
         _remoteUid = 0;
       });
     }));
+    
     // enable video
     await engine.enableVideo();
     // join channel with channel name as 123

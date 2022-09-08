@@ -1,3 +1,4 @@
+import 'package:group_chat_fb/core/dynamic_widgets/video_calling_widget.dart';
 import 'package:group_chat_fb/features/authentication/presentation/pages/forgot_password_page.dart';
 import 'package:group_chat_fb/features/authentication/presentation/pages/sign_up_page.dart';
 import 'package:group_chat_fb/features/authentication/presentation/pages/sing_in_page.dart';
@@ -23,4 +24,5 @@ class PageConstant {
   static const String singleChatPage = SingleChatPage.routeName;
   static const String myChatPage = MyChatPage.routeName;
   static const String groupMemberPage = GroupMemberPage.routeName;
+  static const String videoCallingWidget = VideoCallingWidget.routeName;
 }

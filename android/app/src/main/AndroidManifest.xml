@@ -2,13 +2,14 @@
     package="com.example.group_chat_fb">
    <application
         android:label="group_chat_fb"
-        android:name="${applicationName}"
+        
         android:icon="@mipmap/ic_launcher">
         <activity
-             android:name=".Application"
+             
             android:name=".MainActivity"
             android:exported="true"
             android:launchMode="singleTop"
+            
             android:theme="@style/LaunchTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"

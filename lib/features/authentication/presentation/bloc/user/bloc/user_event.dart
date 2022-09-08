@@ -13,3 +13,12 @@ class GetUpdatedUser extends UserEvent {
   final UserEntity entity;
   const GetUpdatedUser({required this.entity});
 }
+
+class UpdateChattingWithEvent extends UserEvent {
+  String uid;
+  List<String> users;
+
+  UpdateChattingWithEvent({required this.uid, required this.users});
+  @override
+  List<Object> get props => [uid, users];
+}

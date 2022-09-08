@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:group_chat_fb/core/dynamic_widgets/video_calling_widget.dart';
 import 'package:group_chat_fb/features/authentication/domain/enitity/user_entity.dart';
 import 'package:group_chat_fb/features/authentication/presentation/pages/forgot_password_page.dart';
 import 'package:group_chat_fb/features/authentication/presentation/pages/sign_up_page.dart';
@@ -82,9 +83,22 @@ class OnGenerateRoute {
       case PageConstant.groupMemberPage:
         {
           if (args is String) {
-            return materialBuilder(
-              GroupMemberPage(
+            return materialBuilder(GroupMemberPage(
               groupId: args,
+            ));
+          } else {
+            return materialBuilder(const ErrorPage());
+          }
+        }
+
+      case PageConstant.videoCallingWidget:
+        {
+          if (args is List) {
+            return materialBuilder(VideoCallingWidget(
+              channelId: args.first,
+              messageType: args[1],
+              senderId: args[2],
+              senderName: args[3],
             ));
           } else {
             return materialBuilder(const ErrorPage());

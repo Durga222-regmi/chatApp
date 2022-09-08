@@ -102,7 +102,9 @@ class _AllUserPageState extends State<AllUserPage> {
                                                 photoUrl: filterUsers[index]
                                                     .profileUrl,
                                                 groupId:
-                                                    filterUsers[index].userId),
+                                                    filterUsers[index].userId,
+                                                userName:
+                                                    filterUsers[index].name),
                                             MessageType.oneToOne
                                           ]);
                                     },

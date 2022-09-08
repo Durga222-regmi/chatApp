@@ -8,32 +8,33 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:group_chat_fb/injection_container.dart';
 
 class FirebaseMessagingService {
+  static FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
   static final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
   static void registerNotification(String uid) async {
-    FirebaseMessaging.instance.requestPermission();
-    FirebaseMessaging.onMessage.listen((RemoteMessage remoteMessage) {
-      RemoteNotification? notification = remoteMessage.notification;
-      AndroidNotification? androidNotification =
-          remoteMessage.notification?.android;
+    try {
+      await firebaseMessaging.requestPermission();
+      FirebaseMessaging.onMessage.listen((RemoteMessage remoteMessage) async {
+        RemoteNotification? notification = remoteMessage.notification;
+        AndroidNotification? androidNotification =
+            remoteMessage.notification?.android;
 
-      if (notification != null && androidNotification != null) {
-        _showNotification(remoteMessage.data);
-      }
-    });
+        if (notification != null && androidNotification != null) {
+          _showNotification(remoteMessage.data);
+        }
+      });
 
-    FirebaseMessaging.instance.getToken().then((token) async {
+      final token = await firebaseMessaging.getToken();
       final userDoc =
           await sl.call<FirebaseFirestore>().collection("users").doc(uid).get();
-
       if (userDoc.exists) {
         await userDoc.reference.update({"pushToken": token});
       } else {
         log("user no existed ");
       }
-    }).catchError((e) {
+    } catch (e) {
       log(e.toString());
-    });
+    }
   }
 
   static void configLocalNotification() {

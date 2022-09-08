@@ -1,12 +1,9 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:group_chat_fb/app_constant.dart';
 import 'package:group_chat_fb/core/dynamic_widgets/custom_chat_tile_widget.dart';
 import 'package:group_chat_fb/core/enum/enums.dart';
 import 'package:group_chat_fb/features/authentication/presentation/bloc/user/bloc/user_bloc.dart';
-import 'package:group_chat_fb/features/chat/domain/entity/group_entity.dart';
 import 'package:group_chat_fb/features/chat/domain/entity/single_chat_entity.dart';
 import 'package:group_chat_fb/features/chat/presentation/bloc/group/group_bloc.dart';
 import 'package:group_chat_fb/features/chat/presentation/pages/single_chat_page.dart';
@@ -34,7 +31,6 @@ class _GroupPageState extends State<GroupPage> {
       setState(() {});
     });
     BlocProvider.of<GroupBloc>(context).add(GetGroupEvent());
-    log("calling..");
 
     super.initState();
   }
@@ -110,13 +106,20 @@ class _GroupPageState extends State<GroupPage> {
                                 onTap: () {
                                   List<String> usersId = [];
                                   filterGroup[index].users?.forEach((element) {
-                                    usersId.add(element.uid!);
+                                    if (element.uid != widget.uid) {
+                                      usersId.add(element.uid!);
+                                    } else {
+                                      return;
+                                    }
                                   });
 
-                                  BlocProvider.of<GroupBloc>(context).add(
-                                      JoinGroupEvent(
-                                          groupEntity: filterGroup[index],
-                                          uid: widget.uid));
+                                  if (widget.uid !=
+                                      filterGroup[index].admin!.uid) {
+                                    BlocProvider.of<GroupBloc>(context).add(
+                                        JoinGroupEvent(
+                                            groupEntity: filterGroup[index],
+                                            uid: widget.uid));
+                                  }
 
                                   Navigator.pushNamed(
                                       context, SingleChatPage.routeName,

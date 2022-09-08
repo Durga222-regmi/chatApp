@@ -7,6 +7,7 @@ class TextMessageEntity extends Equatable {
   final String? senderName;
   final String? type;
   final Timestamp? time;
+  final String? status;
   final String? content;
   final String? receiverName;
   final String? messageId;
@@ -19,6 +20,7 @@ class TextMessageEntity extends Equatable {
       this.senderId,
       this.senderName,
       this.time,
+      this.status,
       this.type});
 
   @override
@@ -31,6 +33,7 @@ class TextMessageEntity extends Equatable {
         type,
         time,
         content,
+        status,
         receiverName,
         messageId
       ];
