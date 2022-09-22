@@ -6,10 +6,10 @@ import 'package:group_chat_fb/features/authentication/presentation/pages/sign_up
 import 'package:group_chat_fb/features/authentication/presentation/pages/sing_in_page.dart';
 import 'package:group_chat_fb/features/chat/presentation/pages/chat_home_page.dart';
 import 'package:group_chat_fb/features/chat/presentation/pages/create_group_page.dart';
+import 'package:group_chat_fb/features/chat/presentation/pages/group_member_page.dart';
 import 'package:group_chat_fb/features/chat/presentation/pages/my_chat_page.dart';
 import 'package:group_chat_fb/features/chat/presentation/pages/profile_page.dart';
 import 'package:group_chat_fb/features/chat/presentation/pages/single_chat_page.dart';
-import 'package:group_chat_fb/features/chat/presentation/pages/group_member_page.dart';
 import 'package:group_chat_fb/page_constant.dart';
 
 class OnGenerateRoute {
@@ -97,8 +97,7 @@ class OnGenerateRoute {
             return materialBuilder(VideoCallingWidget(
               channelId: args.first,
               messageType: args[1],
-              senderId: args[2],
-              senderName: args[3],
+              clientRole: args[2],
             ));
           } else {
             return materialBuilder(const ErrorPage());

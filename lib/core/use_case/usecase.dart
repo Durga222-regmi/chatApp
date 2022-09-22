@@ -12,4 +12,4 @@ class NoParams extends Equatable {
   List<Object?> get props => throw UnimplementedError();
 }
 
-abstract class Params {}
+abstract class Params<Type> {}

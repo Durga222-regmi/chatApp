@@ -92,6 +92,7 @@ class _AllUserPageState extends State<AllUserPage> {
                                                           filterUsers[index]
                                                               .userId,
                                                       uid: widget.uid)));
+
                                       Navigator.pushNamed(
                                           context, SingleChatPage.routeName,
                                           arguments: [
@@ -105,7 +106,7 @@ class _AllUserPageState extends State<AllUserPage> {
                                                     filterUsers[index].userId,
                                                 userName:
                                                     filterUsers[index].name),
-                                            MessageType.oneToOne
+                                            MessageType.oneToOne,
                                           ]);
                                     },
                                     child: Container(

@@ -106,7 +106,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
         .get();
 
     if (chatDoc.exists) {
-      return chatDoc.get("channelId");
+      return await chatDoc.get("channelId");
     } else {
       final chatChannelId = oneToOneChatChannelRef.doc().id;
 

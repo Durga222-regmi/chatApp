@@ -5,13 +5,9 @@ import 'package:equatable/equatable.dart';
 import 'package:group_chat_fb/core/enum/enums.dart';
 import 'package:group_chat_fb/features/chat/domain/entity/engage_user_entity.dart';
 import 'package:group_chat_fb/features/chat/domain/entity/text_message_entity.dart';
-import 'package:group_chat_fb/features/chat/domain/usecases/chat/add_to_my_chat_usecase.dart';
 import 'package:group_chat_fb/features/chat/domain/usecases/chat/create_one_to_one_channel_usecase.dart';
-import 'package:group_chat_fb/features/chat/domain/usecases/chat/get_my_chat_usecase.dart';
 import 'package:group_chat_fb/features/chat/domain/usecases/chat/get_text_messages_usecase.dart';
 import 'package:group_chat_fb/features/chat/domain/usecases/chat/send_text_message_usecase.dart';
-
-import '../../../domain/entity/my_chat_entity.dart';
 
 part 'chat_event.dart';
 part 'chat_state.dart';
@@ -68,7 +64,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
               engageUserEntity: event.engageUserEntity));
 
       await resultOrFailure.fold((failure) async {
-        ChatFailure(failureMessage: "can not send message");
+        ChatFailure(failureMessage: "can not create channel");
       }, (result) async {
         log("result is $result");
         emit(ChatChannelCreated(channelID: result));
